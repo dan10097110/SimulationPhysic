@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 namespace SimulationPhysic
 {
-    public class ElectricalField : Field
+    public class EField : Field
     {
         List<Charge> charges = new List<Charge>();
 
@@ -16,7 +17,7 @@ namespace SimulationPhysic
             charges.AddRange(charge);
         }
 
-        public override void Calculate()
+        public override void ApplyForce()
         {
             foreach (var c in charges)
                 c.acc += Vector3.Mul(Strength(c.pos), c.charge / c.mass);
@@ -31,10 +32,66 @@ namespace SimulationPhysic
             return s;
         }
     }
+    public class EMField : Field
+    {
+        List<Charge> charges = new List<Charge>();
+        EField last;
+
+        public EMField(params Charge[] charge)
+        {
+            charges.AddRange(charge);
+            last = new EField(charges.Select(c => c.Clone()));
+        }
+
+        public override void ApplyForce()
+        {
+            last = new EField(charges.Select(c => c.Clone()));;
+            foreach (var c in charges)
+                c.acc += Vector3.Mul(Strength(c.pos), c.charge / c.mass);
+        }
+
+        //Wie bestimme ich das magenetfeld?
+        public override Vector3 Strength(Vector3 pos)
+        {
+            var s = new Vector3();
+            foreach (var c in charges)
+                if (pos != c.pos)
+                    s += c.ElectricalField(pos);
+            var t = (s - last.Strength(pos) / minTimeStep);
+            return s;
+        }
+
+        public override EMField Clone() => new EMField(charges.Select(c => c.Clone()));
+    }
+
+    public class GField : Field
+    {
+        List<Body> bodies = new List<Body>();
+
+        public GField(params Body[] bodies)
+        {
+            this.bodies = bodies;
+        }
+
+        public override void ApplyForce()
+        {
+            foreach (var c in charges)
+                c.acc += Vector3.Mul(Strength(c.pos), c.charge / c.mass);
+        }
+        public override Vector3 Strength(Vector3 pos)
+        {
+            var s = new Vector3();
+            foreach (var b in bodies)
+                if (pos != b.pos)
+                    s += b.ElectricalField(pos);
+            var t = (s - last.Strength(pos) / minTimeStep);
+            return s;
+        }
+    }
 
     public abstract class Field
     {
         public abstract Vector3 Strength(Vector3 pos);
-        public abstract void Calculate();
+        public abstract void ApplyForce();
     }
 }

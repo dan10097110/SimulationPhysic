@@ -43,13 +43,12 @@
             vel += acc * time;
             acc = new Vector3();
         }
+
+        public Vector3 GField(Vector3 pos)
+        {
+
+        }
     }
-
-    /// <summary>
-    /// test if collision will happen
-    /// adapt velocity
-    /// </summary>
-
 
     public abstract class Charge : Body
     {
@@ -64,5 +63,7 @@
         {
             return Physic.Force.Coulomb(1, charge, Vector3.Sub(pos, this.pos));
         }
+
+        public override Charge Clone() => new Charge(pos.Clone(), charge, mass, radius);
     }
 }
