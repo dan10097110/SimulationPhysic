@@ -46,11 +46,11 @@
 
         public Vector3 GField(Vector3 pos)
         {
-
+            return Physic.Force.Gravitation(1, mass, Vector3.Sub(pos, this.pos));
         }
     }
 
-    public abstract class Charge : Body
+    public class Charge : Body
     {
         public double charge;
 
@@ -64,6 +64,6 @@
             return Physic.Force.Coulomb(1, charge, Vector3.Sub(pos, this.pos));
         }
 
-        public override Charge Clone() => new Charge(pos.Clone(), charge, mass, radius);
+        public Charge Clone() => new Charge(pos.Clone(), charge, mass, radius);
     }
 }

@@ -35,13 +35,15 @@ namespace SimulationPhysic
         {
             pen = new Pen(Color.Black, 2);
             system = new PhysicalSystem(minTimeStep);
-            var e1 = new Electron(new Vector3(0, -2, 0));
-            var e2 = new Electron(new Vector3(5, 0, 0));
-            var e3 = new Electron(new Vector3(-5, 0, 0));
-            var e4 = new Electron(new Vector3(-4, 0, 0));
-            var p1 = new Positron(new Vector3(0, 2, 0));
-            var p2 = new Proton(new Vector3(0, 0, 0));
-            system.AddCharge(e1, e2, e3, e4, p1, p2);
+            var charges = new Charge[] {
+                new Electron(new Vector3(0, -2, 0)),
+                new Electron(new Vector3(5, 0, 0)),
+                new Electron(new Vector3(-5, 0, 0)),
+                new Electron(new Vector3(-4, 0, 0)),
+                new Positron(new Vector3(0, 2, 0)),
+                new Proton(new Vector3(0, 0, 0))
+            };
+            system.AddCharge(charges);
             thread = new Thread(new ThreadStart(() =>
             {
                 var sw = new Stopwatch();

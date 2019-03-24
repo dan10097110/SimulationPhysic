@@ -42,7 +42,7 @@ namespace SimulationPhysic
 
         public Vector3 Inverse() => new Vector3(-x, -y, -z);
 
-        public Vector3 Square() => this * this;
+        public double Square() => this * this;
 
         public override string ToString() => "(" + x + ";" + y + ";" + z + ")";
 

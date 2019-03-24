@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System;
 
 namespace SimulationPhysic
 {
@@ -26,32 +27,32 @@ namespace SimulationPhysic
             eField.ApplyForce();
             bodies.ForEach(b => b.Move(minTimeStep));
             //elastische Stöße
-            foreach(Body b in bodies)
+            for(int i = 1; i < bodies.Count; i++)
             {
-                foreach(Body c in bodies)
+                for(int j = 0; j < i; j++)
                 {
-                    if(b != c)
+                    double d = bodies[i].radius + bodies[j].radius;
+                    var v = bodies[i].vel - bodies[j].vel;
+                    var s = bodies[i].pos - bodies[j].pos;
+                    var vs = v * s;
+                    var vv = v * v;
+                    double w = (vs * vs) - (s.Square() * vv) + (d * d * vv);
+                    if (w > 0)
                     {
-                        double d = b.radius + c.radius;
-                        var v = b.vel - c.vel;
-                        var s = b.pos - c.pos;
-                        var vs = v * s;
-                        var vv = v * v;
-                        double w = vs*vs-s.Square()*vv-d*d*vv;
-                        if(iw >= 0)
+                        w = Math.Sqrt(w);
+                        double t1 = (-vs - w) / vv, t2 = (-vs + w) / vv;
+                        bool b1 = t1 <= 0 && -t1 <= minTimeStep, b2 = t2 <= 0 && -t2 <= minTimeStep;
+                        if (b1 || b2)
                         {
-                            w = Math.Sqrt(w);
-                            double t, t1 = (-vs - w) / vv, t2 = (-vs + w) / vv;
-                            bool b1 = t1 <= 0 && -t1 <= minTimeStep, b2 = t2 <= 0 && -t2 <= minTimeStep;
-                            double t = b1 && b2 ? t1 < t2 ? t1 : t2 : b1 ? t1 : t2;
-                            b.pos += b.vel * t;
-                            c.pos += c.vel * t;    
-                            var x = b.vel.Clone();
-                            var y = c.vel.Clone();
-                            b.vel = y * (c.mass / b.mass);
-                            c.vel = x * (b.mass / c.mass);
-                            b.pos += b.vel * -t;
-                            c.pos += c.vel * -t;
+                            double t = b1 && b2 ? (t1 < t2 ? t1 : t2) : (b1 ? t1 : t2);
+                            bodies[i].pos += bodies[i].vel * t;
+                            bodies[j].pos += bodies[j].vel * t;
+                            var x = bodies[i].vel.Clone();
+                            var y = bodies[j].vel.Clone();
+                            bodies[i].vel = y * (bodies[j].mass / bodies[i].mass);
+                            bodies[j].vel = x * (bodies[i].mass / bodies[j].mass);
+                            bodies[i].pos += bodies[i].vel * -t;
+                            bodies[j].pos += bodies[j].vel * -t;
                         }
                     }
                 }

@@ -7,7 +7,7 @@ namespace SimulationPhysic
     {
         List<Charge> charges = new List<Charge>();
 
-        public ElectricalField(params Charge[] charge)
+        public EField(params Charge[] charge)
         {
             charges.AddRange(charge);
         }
@@ -40,12 +40,12 @@ namespace SimulationPhysic
         public EMField(params Charge[] charge)
         {
             charges.AddRange(charge);
-            last = new EField(charges.Select(c => c.Clone()));
+            last = new EField(charges.Select(c => c.Clone()).ToArray());
         }
 
         public override void ApplyForce()
         {
-            last = new EField(charges.Select(c => c.Clone()));;
+            last = new EField(charges.Select(c => c.Clone()).ToArray());;
             foreach (var c in charges)
                 c.acc += Vector3.Mul(Strength(c.pos), c.charge / c.mass);
         }
@@ -57,11 +57,11 @@ namespace SimulationPhysic
             foreach (var c in charges)
                 if (pos != c.pos)
                     s += c.ElectricalField(pos);
-            var t = (s - last.Strength(pos) / minTimeStep);
+            //var t = (s - last.Strength(pos) / minTimeStep);
             return s;
         }
 
-        public override EMField Clone() => new EMField(charges.Select(c => c.Clone()));
+        public EMField Clone() => new EMField(charges.Select(c => c.Clone()).ToArray());
     }
 
     public class GField : Field
@@ -70,21 +70,21 @@ namespace SimulationPhysic
 
         public GField(params Body[] bodies)
         {
-            this.bodies = bodies;
+            this.bodies = bodies.ToList();
         }
 
         public override void ApplyForce()
         {
-            foreach (var c in charges)
-                c.acc += Vector3.Mul(Strength(c.pos), c.charge / c.mass);
+            foreach (var b in bodies)
+                b.acc += Strength(b.pos);
         }
+
         public override Vector3 Strength(Vector3 pos)
         {
             var s = new Vector3();
             foreach (var b in bodies)
                 if (pos != b.pos)
-                    s += b.ElectricalField(pos);
-            var t = (s - last.Strength(pos) / minTimeStep);
+                    s += b.GField(pos);
             return s;
         }
     }
