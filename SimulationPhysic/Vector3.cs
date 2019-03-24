@@ -42,6 +42,8 @@ namespace SimulationPhysic
 
         public Vector3 Inverse() => new Vector3(-x, -y, -z);
 
+        public Vector3 Square() => this * this;
+
         public override string ToString() => "(" + x + ";" + y + ";" + z + ")";
 
         public Vector3 Clone() => new Vector3(x, y, z);
