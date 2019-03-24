@@ -20,7 +20,6 @@ namespace SimulationPhysic
         int calculationsUntilRefresh = 20000;
         int timeUntilRefresh = 0;
         double zoom = 50;
-        double offsetX = 0, offsetY = 0;
         Thread thread;
         double startMouseX = 0, startMouseY = 0;
         double offsetMouseX = 0, offsetMouseY = 0;
@@ -31,8 +30,8 @@ namespace SimulationPhysic
             pen = new Pen(Color.Black, 2);
             system = new PhysicalSystem(minTimeStep);
             var charges = new Charge[] {
-                new Electron(new Vector3(0, -2, 0)),
-                new Positron(new Vector3(0, 2, 0))/*,
+                new Electron(new Vector3(0, 0, 0)),
+                new Positron(new Vector3(0, 4, 0))/*,
                 new Electron(new Vector3(5, 0, 0)),
                 new Electron(new Vector3(-5, 0, 0)),
                 new Electron(new Vector3(-4, 0, 0)),
@@ -60,10 +59,10 @@ namespace SimulationPhysic
         {
             foreach (var b in system.bodies)
             {
-                double outputPosX = (b.pos.x - offsetX - (offsetMouseX + (mouseDown ? startMouseX - MousePosition.X : 0)) / zoom) * zoom + Width / 2;
-                double outputPosY = (b.pos.y - offsetY - (offsetMouseY + (mouseDown ? startMouseY - MousePosition.Y : 0)) / zoom) * zoom + Height / 2;
-                if (outputPosX >= 0 && outputPosX < Width && outputPosY >= 0 && outputPosY < Height)
-                    e.Graphics.DrawCircle(pen, (int)outputPosX, (int)outputPosY, (float)Math.Ceiling(b.radius * zoom));
+                double scaledXPos = b.pos.x * zoom - (offsetMouseX + (mouseDown ? startMouseX - MousePosition.X : 0));
+                double scaledYPos = b.pos.y * zoom - (offsetMouseY + (mouseDown ? startMouseY - MousePosition.Y : 0));
+                if (scaledXPos > -Width / 2 && scaledXPos <= Width / 2 && scaledYPos > -Height / 2 && scaledYPos <= Height / 2)
+                    e.Graphics.DrawCircle(pen, (int)scaledXPos + Width / 2, (int)scaledYPos + Height / 2, (float)Math.Ceiling(b.radius * zoom));
             }
             label1.Text = system.time.ToString();
             label2.Text = (1000 / (float)timeUntilRefresh).ToString() + "Hz";
