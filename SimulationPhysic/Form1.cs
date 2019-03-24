@@ -16,10 +16,55 @@ namespace SimulationPhysic
     {
         Pen pen;
         PhysicalSystem system;
-        const double minTimeStep = 0.0000005;
-        const double zoom = 1;
-        readonly Vector3 observedCenter = new Vector3(), observedRange = new Vector3(1, 1, 1) * 50;
+        double minTimeStep = 0.000000001;
+        int calculationsUntilRefresh = 40000;
+        int timeUntilRefresh = 0;
+        double zoom = 50;
+        readonly Vector3 observedCenter = new Vector3();
         Thread thread;
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            pen = new Pen(Color.Black, 2);
+            system = new PhysicalSystem(minTimeStep);
+            var charges = new Charge[] {
+                new Electron(new Vector3(0, -0.5, 0)),
+                /*new Electron(new Vector3(5, 0, 0)),
+                new Electron(new Vector3(-5, 0, 0)),
+                new Electron(new Vector3(-4, 0, 0)),*/
+                new Positron(new Vector3(0, 0.5, 0))//,
+                //new Proton(new Vector3(0, 0, 0))
+            };
+            system.AddCharge(charges);
+            textBox1.Text = calculationsUntilRefresh.ToString();
+            thread = new Thread(new ThreadStart(() =>
+            {
+                var sw = new Stopwatch();
+                for (; ; )
+                {
+                    sw.Start();
+                    for (int i = 0; i < calculationsUntilRefresh; i++)
+                        system.Proceed();
+                    timeUntilRefresh = (int)sw.ElapsedMilliseconds;
+                    Invalidate();
+                    sw.Reset();
+                }
+            }));
+            thread.Start();
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            foreach (var b in system.bodies)
+            {
+                double outputPosX = (b.pos.x - observedCenter.x) * zoom + Width / 2;
+                double outputPosY = (b.pos.y - observedCenter.y) * zoom + Height / 2;
+                if (outputPosX >= 0 && outputPosX < Width && outputPosY >= 0 && outputPosY < Height)
+                    e.Graphics.DrawCircle(pen, (int)outputPosX, (int)outputPosY, (float)Math.Ceiling(b.radius*zoom));
+            }
+            label1.Text = system.time.ToString();
+            label2.Text = (1000 / (float)timeUntilRefresh).ToString() + "Hz";
+        }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -31,51 +76,19 @@ namespace SimulationPhysic
             InitializeComponent();
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void button1_Click(object sender, EventArgs e)
         {
-            pen = new Pen(Color.Black, 2);
-            system = new PhysicalSystem(minTimeStep);
-            var charges = new Charge[] {
-                new Electron(new Vector3(0, -2, 0)),
-                new Electron(new Vector3(5, 0, 0)),
-                new Electron(new Vector3(-5, 0, 0)),
-                new Electron(new Vector3(-4, 0, 0)),
-                new Positron(new Vector3(0, 2, 0)),
-                new Proton(new Vector3(0, 0, 0))
-            };
-            system.AddCharge(charges);
-            thread = new Thread(new ThreadStart(() =>
-            {
-                var sw = new Stopwatch();
-                for (; ; )
-                {
-                    sw.Start();
-                    for (int i = 0; i < 40000; i++)
-                        system.Proceed();
-                    d = (int)sw.ElapsedMilliseconds;
-                    this.Invalidate();
-                    sw.Reset();
-                }
-            }));
-            thread.Start();
+            zoom *= 2;
         }
 
-        int d = 0;
-
-        protected override void OnPaint(PaintEventArgs e)
+        private void button2_Click(object sender, EventArgs e)
         {
-            foreach (Body b in system.bodies)
-            {
-                Vector3 zoomedObservedRange = observedRange * (1 - 1000 / (float)(trackBar1.Value - 1000)) / 3;
-                var outputPos = (b.pos - observedCenter + zoomedObservedRange / 2);
-                outputPos.x *= Width / zoomedObservedRange.x;
-                outputPos.y *= Height / zoomedObservedRange.y;
-                outputPos.z *= 1 / zoomedObservedRange.z;
-                if (outputPos.x >= 0 && outputPos.x < Width && outputPos.y >= 0 && outputPos.y < Height)
-                    e.Graphics.DrawCircle(pen, (int)outputPos.x, (int)outputPos.y, 3);
-            }
-            label1.Text = system.time.ToString();
-            label2.Text = (1000 / ((float)d)).ToString() + "Hz";
+            zoom /= 2;
+        }
+
+        private void textBox1_TextChanged(object sender, EventArgs e)
+        {
+            calculationsUntilRefresh = int.Parse(textBox1.Text);
         }
     }
 
