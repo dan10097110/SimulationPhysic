@@ -16,24 +16,27 @@ namespace SimulationPhysic
     {
         Pen pen;
         PhysicalSystem system;
-        double minTimeStep = 0.000000001;
-        int calculationsUntilRefresh = 40000;
+        double minTimeStep = 0.00000005;
+        int calculationsUntilRefresh = 20000;
         int timeUntilRefresh = 0;
         double zoom = 50;
-        readonly Vector3 observedCenter = new Vector3();
+        double offsetX = 0, offsetY = 0;
         Thread thread;
+        double startMouseX = 0, startMouseY = 0;
+        double offsetMouseX = 0, offsetMouseY = 0;
+        bool mouseDown = false;
 
         private void Form1_Load(object sender, EventArgs e)
         {
             pen = new Pen(Color.Black, 2);
             system = new PhysicalSystem(minTimeStep);
             var charges = new Charge[] {
-                new Electron(new Vector3(0, -0.5, 0)),
-                /*new Electron(new Vector3(5, 0, 0)),
+                new Electron(new Vector3(0, -2, 0)),
+                new Positron(new Vector3(0, 2, 0))/*,
+                new Electron(new Vector3(5, 0, 0)),
                 new Electron(new Vector3(-5, 0, 0)),
-                new Electron(new Vector3(-4, 0, 0)),*/
-                new Positron(new Vector3(0, 0.5, 0))//,
-                //new Proton(new Vector3(0, 0, 0))
+                new Electron(new Vector3(-4, 0, 0)),
+                new Proton(new Vector3(0, 0, 0))*/
             };
             system.AddCharge(charges);
             textBox1.Text = calculationsUntilRefresh.ToString();
@@ -57,10 +60,10 @@ namespace SimulationPhysic
         {
             foreach (var b in system.bodies)
             {
-                double outputPosX = (b.pos.x - observedCenter.x) * zoom + Width / 2;
-                double outputPosY = (b.pos.y - observedCenter.y) * zoom + Height / 2;
+                double outputPosX = (b.pos.x - offsetX - (offsetMouseX + (mouseDown ? startMouseX - MousePosition.X : 0)) / zoom) * zoom + Width / 2;
+                double outputPosY = (b.pos.y - offsetY - (offsetMouseY + (mouseDown ? startMouseY - MousePosition.Y : 0)) / zoom) * zoom + Height / 2;
                 if (outputPosX >= 0 && outputPosX < Width && outputPosY >= 0 && outputPosY < Height)
-                    e.Graphics.DrawCircle(pen, (int)outputPosX, (int)outputPosY, (float)Math.Ceiling(b.radius*zoom));
+                    e.Graphics.DrawCircle(pen, (int)outputPosX, (int)outputPosY, (float)Math.Ceiling(b.radius * zoom));
             }
             label1.Text = system.time.ToString();
             label2.Text = (1000 / (float)timeUntilRefresh).ToString() + "Hz";
@@ -86,9 +89,23 @@ namespace SimulationPhysic
             zoom /= 2;
         }
 
+        private void Form1_MouseUp(object sender, MouseEventArgs e)
+        {
+            mouseDown = false;
+            offsetMouseX += (startMouseX - MousePosition.X);
+            offsetMouseY += (startMouseY - MousePosition.Y);
+        }
+
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
             calculationsUntilRefresh = int.Parse(textBox1.Text);
+        }
+
+        private void Form1_MouseDown(object sender, MouseEventArgs e)
+        {
+            mouseDown = true;
+            startMouseX = MousePosition.X;
+            startMouseY = MousePosition.Y;
         }
     }
 
