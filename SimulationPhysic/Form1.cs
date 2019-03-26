@@ -59,7 +59,7 @@ namespace SimulationPhysic
         {
             foreach (var b in system.bodies)
             {
-                double scaledXPos = b.pos.x * zoom - (offsetMouseX + (mouseDown ? startMouseX - MousePosition.X : 0));
+                double scaledXPos = b.pos.x * zoom - (offsetMouseX + (mouseDown ? startMouseX - MousePosition.X : 0));//den offset teil in richtige koordinaten umrechnen
                 double scaledYPos = b.pos.y * zoom - (offsetMouseY + (mouseDown ? startMouseY - MousePosition.Y : 0));
                 if (scaledXPos > -Width / 2 && scaledXPos <= Width / 2 && scaledYPos > -Height / 2 && scaledYPos <= Height / 2)
                     e.Graphics.DrawCircle(pen, (int)scaledXPos + Width / 2, (int)scaledYPos + Height / 2, (float)Math.Ceiling(b.radius * zoom));

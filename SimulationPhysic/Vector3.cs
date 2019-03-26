@@ -44,6 +44,8 @@ namespace SimulationPhysic
 
         public double Square() => this * this;
 
+        public Vector3 NORMIERENODERWIEAUCHIMMERDASHEISST() => this / this.Sum();
+
         public override string ToString() => "(" + x + ";" + y + ";" + z + ")";
 
         public Vector3 Clone() => new Vector3(x, y, z);

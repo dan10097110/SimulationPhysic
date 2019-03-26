@@ -44,6 +44,8 @@
             acc = new Vector3();
         }
 
+        public Vector3 PULSEODERSO => mass * vel;
+
         public Vector3 GField(Vector3 pos)
         {
             return Physic.Force.Gravitation(1, mass, Vector3.Sub(pos, this.pos));
