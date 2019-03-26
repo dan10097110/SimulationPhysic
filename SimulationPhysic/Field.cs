@@ -32,6 +32,7 @@ namespace SimulationPhysic
             return s;
         }
     }
+
     public class EMField : Field
     {
         List<Charge> charges = new List<Charge>();

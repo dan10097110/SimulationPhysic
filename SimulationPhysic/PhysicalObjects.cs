@@ -2,30 +2,33 @@
 {
     public class Electron : Charge
     {
-        public Electron(Vector3 pos) : base(pos, Physic.Constant.electronCharge, Physic.Constant.electronMass, Physic.Constant.electronRadius)
+        public Electron(Vector3 pos) : base(Physic.Constant.electronCharge, new Body(Physic.Constant.electronMass, Physic.Constant.electronRadius, pos))
         {
         }
     }
 
     public class Proton : Charge
     {
-        public Proton(Vector3 pos) : base(pos, Physic.Constant.protonCharge, Physic.Constant.protonMass, Physic.Constant.protonRadius)
+        public Proton(Vector3 pos) : base(Physic.Constant.protonCharge, new Body(Physic.Constant.protonMass, Physic.Constant.protonRadius, pos))
         {
         }
     }
 
     public class Positron : Charge
     {
-        public Positron(Vector3 pos) : base(pos, -Physic.Constant.electronCharge, Physic.Constant.electronMass, Physic.Constant.electronRadius)
+        public Positron(Vector3 pos) : base(-Physic.Constant.electronCharge, new Body(Physic.Constant.electronMass, Physic.Constant.electronRadius, pos))
         {
         }
     }
 
-    public abstract class Body
+    public class Body
     {
         public Vector3 pos, vel, acc;
         public double mass, radius;
 
+        public Vector3 Momentum => mass * vel;
+
+        public Body(Body body) : this(body.mass, body.radius, body.pos, body.vel, body.acc) { }
         public Body(double mass, double radius, Vector3 pos) : this(mass, radius, pos, new Vector3(), new Vector3()) { }
         public Body(double mass, double radius, Vector3 pos, Vector3 vel) : this(mass, radius, pos, vel, new Vector3()) { }
         public Body(double mass, double radius, Vector3 pos, Vector3 vel, Vector3 acc)
@@ -44,8 +47,6 @@
             acc = new Vector3();
         }
 
-        public Vector3 PULSEODERSO => mass * vel;
-
         public Vector3 GField(Vector3 pos)
         {
             return Physic.Force.Gravitation(1, mass, Vector3.Sub(pos, this.pos));
@@ -56,7 +57,7 @@
     {
         public double charge;
 
-        public Charge(Vector3 pos, double charge, double mass, double radius) : base(mass, radius, pos)
+        public Charge(double charge, Body body) : base(body)
         {
             this.charge = charge;
         }
@@ -66,6 +67,6 @@
             return Physic.Force.Coulomb(1, charge, Vector3.Sub(pos, this.pos));
         }
 
-        public Charge Clone() => new Charge(pos.Clone(), charge, mass, radius);
+        public Charge Clone() => new Charge(charge, new Body(mass, radius, pos.Clone()));
     }
 }
