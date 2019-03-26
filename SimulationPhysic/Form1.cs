@@ -18,7 +18,7 @@ namespace SimulationPhysic
         PhysicalSystem system;
         double minTimeStep = 0.0000001;
         int calculationsUntilRefresh = 20000;
-        int maxRefreshRate = 60;
+        int maxRefreshRate = 30;
         int timeUntilRefresh = 0;
         double zoom = 50;
         Thread thread;
@@ -53,8 +53,11 @@ namespace SimulationPhysic
                             system.Proceed();
                     }
                     timeUntilRefresh = (int)sw.ElapsedMilliseconds;
-                    if (timeUntilRefresh < 1 / (float)maxRefreshRate)
-                        Thread.Sleep(1 / maxRefreshRate - timeUntilRefresh);
+                    if (timeUntilRefresh < 1000 / (float)maxRefreshRate)
+                    {
+                        Thread.Sleep((int)(1000 / (float)maxRefreshRate - timeUntilRefresh));
+                        timeUntilRefresh += (int)(1000 / (float)maxRefreshRate - timeUntilRefresh);
+                    }
                     Invalidate();
                     sw.Reset();
                 }
