@@ -6,7 +6,7 @@ namespace SimulationPhysic
     public class PhysicalSystem
     {
         public List<Body> bodies = new List<Body>();
-        public EField eField = new EField();
+        public EGField field = new EGField();
         public readonly double minTimeStep;
         public double time = 0;
 
@@ -17,7 +17,7 @@ namespace SimulationPhysic
 
         public void AddCharge(params Charge[] charges)
         {
-            eField.Add(charges);
+            field.Add(charges);
             bodies.AddRange(charges);
         }
 
@@ -29,7 +29,7 @@ namespace SimulationPhysic
         public void Proceed()
         {
             time += minTimeStep;
-            eField.ApplyForce();
+            field.ApplyForce();
             bodies.ForEach(b => b.Move(minTimeStep));
             //elastische Stöße
             for(int i = 1; i < bodies.Count; i++)

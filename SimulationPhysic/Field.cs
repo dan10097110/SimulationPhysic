@@ -3,19 +3,6 @@ using System.Linq;
 
 namespace SimulationPhysic
 {
-    public class EField : Field
-    {
-        public EField(params Charge[] charges)
-        {
-            objects.AddRange(charges.Select(c => (IFieldObject)c));
-        }
-
-        public void Add(params Charge[] charges)
-        {
-            objects.AddRange(charges.Select(c => (IFieldObject)c));
-        }
-    }
-
     /*public class EMField : Field
     {
         List<Charge> charges = new List<Charge>();
@@ -48,31 +35,29 @@ namespace SimulationPhysic
         public EMField Clone() => new EMField(charges.Select(c => c.Clone()).ToArray());
     }*/
 
-    public class GField : Field
+    public abstract class EGField
     {
-        public GField(params Body[] bodies)
+        public List<Body> objects = new List<Body>();
+
+        public EGField(params Body[] objects)
         {
-            objects.AddRange(bodies.Select(b => (IFieldObject)b));
+            this.objects.AddRange(objects);
         }
-    }
 
-    public abstract class Field
-    {
-        public List<IFieldObject> objects = new List<IFieldObject>();
-
-        public Vector3 Strength(Vector3 pos)
+        public void Add(params Body[] objects)
         {
-            var s = new Vector3();
-            foreach (var o in objects)
-                if (pos != o.Pos())
-                    s += o.Field(pos);
-            return s;
+            this.objects.AddRange(objects);
         }
 
         public virtual void ApplyForce()
         {
-            foreach (var o in objects)
-                o.AddForceByStrength(Strength(o.Pos()));
+            for(int i = 1; i < objects.Count; i++)
+                for(int j = 0; j < i; j++)
+                {
+                    var f = Physic.Force.Gravitation(objects[i], objects[j]) + Physic.Force.Coulumb(objects[i], objects[j]);
+                    objects[i].acc -= f / objects[i].mass;
+                    objects[j].acc += f / objects[j].mass;
+                }
         }
     }
 }

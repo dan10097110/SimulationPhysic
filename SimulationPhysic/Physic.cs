@@ -18,6 +18,20 @@ namespace SimulationPhysic
                 return Vector3.Mul(r, (Constant.gravitationConstant * m1 * m2) / (sumR * sumR * sumR));
             }
 
+            public static Vector3 Coulomb(Body b1, Body b2)
+            {
+                var r = b1.pos - b2.pos;
+                double sumR = r.Sum();
+                return Vector3.Mul(r, (b1.charge * b2.charge) / (4 * Math.PI * Constant.electricConstant * sumR * sumR * sumR));
+            }
+
+            public static Vector3 Gravitation(Body b1, Body b2)
+            {
+                var r = b1.pos - b2.pos;
+                double sumR = r.Sum();
+                return Vector3.Mul(r, (Constant.gravitationConstant * b1.mass * b2.mass) / (sumR * sumR * sumR));
+            }
+
             public static Vector3 Lorentz(double q, Vector3 vel, Vector3 B) => q * Vector3.CrossP(vel, B);
         }
 
