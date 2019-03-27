@@ -21,7 +21,7 @@
         }
     }
 
-    public class Body
+    public class Body : IFieldObject
     {
         public Vector3 pos, vel, acc;
         public double mass, radius;
@@ -40,20 +40,22 @@
             this.radius = radius;
         }
 
-        public void Move(double time)
+        public void Move(double time, bool resetAcc)
         {
             pos += vel * time;
             vel += acc * time;
-            acc = new Vector3();
+            if(resetAcc)
+                acc = new Vector3();
         }
 
-        public Vector3 GField(Vector3 pos)
-        {
-            return Physic.Force.Gravitation(1, mass, Vector3.Sub(pos, this.pos));
-        }
+        public void Move(double time) => Move(time, true);
+
+        public Vector3 GField(Vector3 pos) => Physic.Force.Gravitation(1, mass, Vector3.Sub(pos, this.pos));
+
+        public Field(Vector3 pos) => GField(pos);
     }
 
-    public class Charge : Body
+    public class Charge : Body, IFieldObject
     {
         public double charge;
 
@@ -62,11 +64,18 @@
             this.charge = charge;
         }
 
-        public Vector3 ElectricalField(Vector3 pos)
-        {
-            return Physic.Force.Coulomb(1, charge, Vector3.Sub(pos, this.pos));
-        }
+//EField
+        public Vector3 ElectricalField(Vector3 pos) => return Physic.Force.Coulomb(1, charge, Vector3.Sub(pos, this.pos));
 
         public Charge Clone() => new Charge(charge, new Body(mass, radius, pos.Clone()));
+
+        public Field(Vector3 pos) => ElectricalField(pos);
     }
+
+    public interface IFieldObject
+    {
+        Vector3 acc;
+        Vector3 pos;
+        Vector3 Field(Vector3 pos);
+    } 
 }

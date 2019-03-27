@@ -80,7 +80,7 @@ namespace SimulationPhysic
                 b.acc += Strength(b.pos);
         }
 
-        public override Vector3 Strength(Vector3 pos)
+        override Vector3 Strength(Vector3 pos)
         {
             var s = new Vector3();
             foreach (var b in bodies)
@@ -92,7 +92,21 @@ namespace SimulationPhysic
 
     public abstract class Field
     {
-        public abstract Vector3 Strength(Vector3 pos);
-        public abstract void ApplyForce();
+        List<IFieldObject> objects = new List<IFieldObject>();
+
+        public Vector3 Strength(Vector3 pos)
+        {
+            var s = new Vector3();
+            foreach (var o in objects)
+                if (pos != o.pos)
+                    s += o.Field(pos);
+            return s;
+        }
+
+        public abstract void ApplyForce()
+        {
+            foreach (var o in objects)
+                b.acc += Strength(o.pos);
+        }
     }
 }
