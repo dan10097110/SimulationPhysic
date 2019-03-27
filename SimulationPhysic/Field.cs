@@ -5,35 +5,18 @@ namespace SimulationPhysic
 {
     public class EField : Field
     {
-        List<Charge> charges = new List<Charge>();
-
-        public EField(params Charge[] charge)
+        public EField(params Charge[] charges)
         {
-            charges.AddRange(charge);
+            objects.AddRange(charges.Select(c => (IFieldObject)c));
         }
 
-        public void Add(params Charge[] charge)
+        public void Add(params Charge[] charges)
         {
-            charges.AddRange(charge);
-        }
-
-        public override void ApplyForce()
-        {
-            foreach (var c in charges)
-                c.acc += Vector3.Mul(Strength(c.pos), c.charge / c.mass);
-        }
-
-        public override Vector3 Strength(Vector3 pos)
-        {
-            var s = new Vector3();
-            foreach (Charge c in charges)
-                if (pos != c.pos)
-                    s += c.ElectricalField(pos);
-            return s;
+            objects.AddRange(charges.Select(c => (IFieldObject)c));
         }
     }
 
-    public class EMField : Field
+    /*public class EMField : Field
     {
         List<Charge> charges = new List<Charge>();
         EField last;
@@ -57,56 +40,39 @@ namespace SimulationPhysic
             var s = new Vector3();
             foreach (var c in charges)
                 if (pos != c.pos)
-                    s += c.ElectricalField(pos);
+                    s += c.EField(pos);
             //var t = (s - last.Strength(pos) / minTimeStep);
             return s;
         }
 
         public EMField Clone() => new EMField(charges.Select(c => c.Clone()).ToArray());
-    }
+    }*/
 
     public class GField : Field
     {
-        List<Body> bodies = new List<Body>();
-
         public GField(params Body[] bodies)
         {
-            this.bodies = bodies.ToList();
-        }
-
-        public override void ApplyForce()
-        {
-            foreach (var b in bodies)
-                b.acc += Strength(b.pos);
-        }
-
-        override Vector3 Strength(Vector3 pos)
-        {
-            var s = new Vector3();
-            foreach (var b in bodies)
-                if (pos != b.pos)
-                    s += b.GField(pos);
-            return s;
+            objects.AddRange(bodies.Select(b => (IFieldObject)b));
         }
     }
 
     public abstract class Field
     {
-        List<IFieldObject> objects = new List<IFieldObject>();
+        public List<IFieldObject> objects = new List<IFieldObject>();
 
         public Vector3 Strength(Vector3 pos)
         {
             var s = new Vector3();
             foreach (var o in objects)
-                if (pos != o.pos)
+                if (pos != o.Pos())
                     s += o.Field(pos);
             return s;
         }
 
-        public abstract void ApplyForce()
+        public virtual void ApplyForce()
         {
             foreach (var o in objects)
-                b.acc += Strength(o.pos);
+                o.AddForceByStrength(Strength(o.Pos()));
         }
     }
 }

@@ -52,7 +52,15 @@
 
         public Vector3 GField(Vector3 pos) => Physic.Force.Gravitation(1, mass, Vector3.Sub(pos, this.pos));
 
-        public Field(Vector3 pos) => GField(pos);
+        Vector3 IFieldObject.Pos() => pos;
+
+        void IFieldObject.AddAcc(Vector3 acc) => this.acc += acc;
+
+        Vector3 IFieldObject.Field(Vector3 pos) => GField(pos);
+
+        void IFieldObject.AddForce(Vector3 f) => acc += f / mass;
+
+        void IFieldObject.AddForceByStrength(Vector3 s) => acc += s;
     }
 
     public class Charge : Body, IFieldObject
@@ -63,19 +71,22 @@
         {
             this.charge = charge;
         }
-
-//EField
-        public Vector3 ElectricalField(Vector3 pos) => return Physic.Force.Coulomb(1, charge, Vector3.Sub(pos, this.pos));
+        
+        public Vector3 EField(Vector3 pos) => Physic.Force.Coulomb(1, charge, Vector3.Sub(pos, this.pos));
 
         public Charge Clone() => new Charge(charge, new Body(mass, radius, pos.Clone()));
 
-        public Field(Vector3 pos) => ElectricalField(pos);
+        public Vector3 Field(Vector3 pos) => EField(pos);
+
+        new void IFieldObject.AddForceByStrength(Vector3 s) => acc += (s * charge) / mass;
     }
 
     public interface IFieldObject
     {
-        Vector3 acc;
-        Vector3 pos;
+        Vector3 Pos();
+        void AddAcc(Vector3 acc);
+        void AddForce(Vector3 f);
+        void AddForceByStrength(Vector3 s);
         Vector3 Field(Vector3 pos);
     } 
 }
