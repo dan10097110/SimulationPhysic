@@ -5,8 +5,8 @@ namespace SimulationPhysic
 {
     public class PhysicalSystem
     {
-        public List<Body> bodies = new List<Body>();
-        public EGField field = new EGField();
+        public List<Object> objects = new List<Object>();
+        public Field field = new Field();
         public readonly double minTimeStep;
         public double time = 0;
 
@@ -15,30 +15,25 @@ namespace SimulationPhysic
             this.minTimeStep = minTimeStep;
         }
 
-        public void AddCharge(params Charge[] charges)
+        public void AddCharge(params Object[] objects)
         {
-            field.Add(charges);
-            bodies.AddRange(charges);
-        }
-
-        public void AddCharge(params Body[] bodies)
-        {
-            this.bodies.AddRange(bodies);
+            field.Add(objects);
+            this.objects.AddRange(objects);
         }
 
         public void Proceed()
         {
             time += minTimeStep;
             field.ApplyForce();
-            bodies.ForEach(b => b.Move(minTimeStep));
+            objects.ForEach(b => b.Move(minTimeStep));
             //elastische Stöße
-            for(int i = 1; i < bodies.Count; i++)
+            for(int i = 1; i < objects.Count; i++)
             {
                 for(int j = 0; j < i; j++)
                 {
-                    double d = bodies[i].radius + bodies[j].radius;
-                    var v = bodies[i].vel - bodies[j].vel;
-                    var s = bodies[i].pos - bodies[j].pos;
+                    double d = objects[i].r + objects[j].r;
+                    var v = objects[i].v - objects[j].v;
+                    var s = objects[i].x - objects[j].x;
                     var vs = v * s;
                     var vv = v * v;
                     double w = (vs * vs) - (s.Square() * vv) + (d * d * vv);
@@ -50,24 +45,24 @@ namespace SimulationPhysic
                         if (b1 || b2)
                         {
                             double t = b1 && b2 ? (t1 < t2 ? t1 : t2) : (b1 ? t1 : t2);
-                            bodies[i].pos += bodies[i].vel * t;
-                            bodies[j].pos += bodies[j].vel * t;
-                            var x = bodies[i].vel.Clone();
-                            var y = bodies[j].vel.Clone();
+                            objects[i].x += objects[i].v * t;
+                            objects[j].x += objects[j].v * t;
+                            var x = objects[i].v.Clone();
+                            var y = objects[j].v.Clone();
 
 
-                            var n_0 = (bodies[i].pos - bodies[j].pos).Unit();
-                            var v_s_1 = n_0 * (n_0 * bodies[i].vel);
-                            var v_p_1 = bodies[i].vel - v_s_1;
-                            var v_s_2 = n_0 * (n_0 * bodies[j].vel);
-                            var v_p_2 = bodies[j].vel - v_s_2;
+                            var n_0 = (objects[i].x - objects[j].x).Unit();
+                            var v_s_1 = n_0 * (n_0 * objects[i].v);
+                            var v_p_1 = objects[i].v - v_s_1;
+                            var v_s_2 = n_0 * (n_0 * objects[j].v);
+                            var v_p_2 = objects[j].v - v_s_2;
 
-                            bodies[i].vel = (2 * v_s_2 * bodies[j].mass + v_s_1 * bodies[i].mass - v_s_1 * bodies[j].mass) / (bodies[i].mass + bodies[j].mass) + v_p_1;
-                            bodies[j].vel = (2 * v_s_1 * bodies[i].mass + v_s_2 * bodies[j].mass - v_s_2 * bodies[i].mass) / (bodies[i].mass + bodies[j].mass) + v_p_2;
+                            objects[i].v = (2 * v_s_2 * objects[j].m + v_s_1 * objects[i].m - v_s_1 * objects[j].m) / (objects[i].m + objects[j].m) + v_p_1;
+                            objects[j].v = (2 * v_s_1 * objects[i].m + v_s_2 * objects[j].m - v_s_2 * objects[i].m) / (objects[i].m + objects[j].m) + v_p_2;
 
                             
-                            bodies[i].pos += bodies[i].vel * -t;
-                            bodies[j].pos += bodies[j].vel * -t;
+                            objects[i].x += objects[i].v * -t;
+                            objects[j].x += objects[j].v * -t;
                         }
                     }
                 }

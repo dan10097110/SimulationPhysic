@@ -35,16 +35,16 @@ namespace SimulationPhysic
         public EMField Clone() => new EMField(charges.Select(c => c.Clone()).ToArray());
     }*/
 
-    public abstract class EGField
+    public class Field
     {
-        public List<Body> objects = new List<Body>();
+        public List<Object> objects = new List<Object>();
 
-        public EGField(params Body[] objects)
+        public Field(params Object[] objects)
         {
             this.objects.AddRange(objects);
         }
 
-        public void Add(params Body[] objects)
+        public void Add(params Object[] objects)
         {
             this.objects.AddRange(objects);
         }
@@ -54,9 +54,9 @@ namespace SimulationPhysic
             for(int i = 1; i < objects.Count; i++)
                 for(int j = 0; j < i; j++)
                 {
-                    var f = Physic.Force.Gravitation(objects[i], objects[j]) + Physic.Force.Coulumb(objects[i], objects[j]);
-                    objects[i].acc -= f / objects[i].mass;
-                    objects[j].acc += f / objects[j].mass;
+                    var f = Physic.Force.Gravitation(objects[i], objects[j]) + Physic.Force.Coulomb(objects[i], objects[j]);
+                    objects[i].a -= f / objects[i].m;
+                    objects[j].a += f / objects[j].m;
                 }
         }
     }

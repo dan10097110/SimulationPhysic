@@ -30,7 +30,7 @@ namespace SimulationPhysic
         {
             pen = new Pen(Color.Black, 2);
             system = new PhysicalSystem(minTimeStep);
-            var charges = new Charge[] {
+            var charges = new Object[] {
                 new Positron(new Vector3(0, 4, 0)),
                 new Electron(new Vector3(5, 0, 0)),
                 new Electron(new Vector3(-5, 0, 0)),
@@ -67,12 +67,12 @@ namespace SimulationPhysic
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            foreach (var b in system.bodies)
+            foreach (var b in system.objects)
             {
-                double scaledXPos = (b.pos.x - offsetMouseX) * zoom - (mouseDown ? startMouseX - MousePosition.X : 0);
-                double scaledYPos = (b.pos.y - offsetMouseY) * zoom - (mouseDown ? startMouseY - MousePosition.Y : 0);
+                double scaledXPos = (b.x.x - offsetMouseX) * zoom - (mouseDown ? startMouseX - MousePosition.X : 0);
+                double scaledYPos = (b.x.y - offsetMouseY) * zoom - (mouseDown ? startMouseY - MousePosition.Y : 0);
                 if (scaledXPos > -Width / 2 && scaledXPos <= Width / 2 && scaledYPos > -Height / 2 && scaledYPos <= Height / 2)
-                    e.Graphics.DrawCircle(pen, (int)scaledXPos + Width / 2, (int)scaledYPos + Height / 2, (float)Math.Ceiling(b.radius * zoom));
+                    e.Graphics.DrawCircle(pen, (int)scaledXPos + Width / 2, (int)scaledYPos + Height / 2, (float)Math.Ceiling(b.r * zoom));
             }
             label1.Text = system.time.ToString();
             label2.Text = (1000 / (float)timeUntilRefresh).ToString() + "Hz";
