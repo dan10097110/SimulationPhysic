@@ -1,5 +1,5 @@
-﻿using System.Collections.Generic;
-using System;
+﻿using System;
+using System.Collections.Generic;
 
 namespace SimulationPhysic
 {
@@ -15,7 +15,7 @@ namespace SimulationPhysic
             this.minTimeStep = minTimeStep;
         }
 
-        public void AddCharge(params Object[] objects)
+        public void Add(params Object[] objects)
         {
             field.Add(objects);
             this.objects.AddRange(objects);

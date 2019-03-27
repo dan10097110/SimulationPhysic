@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Linq;
 
 namespace SimulationPhysic
 {
@@ -35,9 +34,12 @@ namespace SimulationPhysic
         public EMField Clone() => new EMField(charges.Select(c => c.Clone()).ToArray());
     }*/
 
+
+    //fiel in system tun
     public class Field
     {
         public List<Object> objects = new List<Object>();
+        bool gravitation = false, electricalF = true; 
 
         public Field(params Object[] objects)
         {
@@ -54,9 +56,13 @@ namespace SimulationPhysic
             for(int i = 1; i < objects.Count; i++)
                 for(int j = 0; j < i; j++)
                 {
-                    var f = Physic.Force.Gravitation(objects[i], objects[j]) + Physic.Force.Coulomb(objects[i], objects[j]);
-                    objects[i].a -= f / objects[i].m;
-                    objects[j].a += f / objects[j].m;
+                    var f = new Vector3();
+                    if (gravitation)
+                        f += Physic.Force.Gravitation(objects[i], objects[j]);
+                    if (electricalF)
+                        f += Physic.Force.Coulomb(objects[i], objects[j]);
+                    objects[i].f += f;
+                    objects[j].f -= f;
                 }
         }
     }

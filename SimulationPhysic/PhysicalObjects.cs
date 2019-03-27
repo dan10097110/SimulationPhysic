@@ -17,7 +17,7 @@
 
     public class Object
     {
-        public Vector3 x, v, a;
+        public Vector3 x, v, a, f;
         public double m, r, q;
 
         public Vector3 p => m * v;
@@ -33,17 +33,17 @@
             this.v = v;
             this.a = a;
             this.r = r;
+            f = new Vector3();
         }
 
-        public void Move(double t, bool resetAcc)
+        public void Move(double t)
         {
+            a += f / m;
             x += v * t;
             v += a * t;
-            if(resetAcc)
-                a = new Vector3();
+            f = new Vector3();
+            a = new Vector3();
         }
-
-        public void Move(double t) => Move(t, true);
 
         public Vector3 GField(Vector3 x) => Physic.Force.Gravitation(1, m, Vector3.Sub(x, this.x));
         
