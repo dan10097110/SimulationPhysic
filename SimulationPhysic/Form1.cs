@@ -17,9 +17,10 @@ namespace SimulationPhysic
 
         //farben nach ladung
 
-        double minTimeStep = 0.00000001;
+        double minTimeStepS = 0.00000001;
         double zoom = 50;
 
+        Stopwatch sw = new Stopwatch();
         Pen pen;
         PhysicalSystem system;
         Thread thread;
@@ -31,31 +32,35 @@ namespace SimulationPhysic
         {
             frameTimeMs = (int)(1000f / int.Parse(textBox1.Text));
             pen = new Pen(Color.Black, 2);
-            system = new PhysicalSystem(minTimeStep);
             var objects = new Object[] {
-                new Positron(new Vector3(0, 4, 0)),
-                new Electron(new Vector3(5, 0, 0)),
-                new Electron(new Vector3(-5, 0, 0)),
+                new Positron(new Vector3(0, 1, 0), new Vector3(8,0,0)),
+                new Electron(new Vector3(0, -1, 0), new Vector3(-8,0,0))
+                /*new Electron(new Vector3(-5, 0, 0)),
                 new Electron(new Vector3(-4, 0, 0)),
-                new Proton(new Vector3(0, 0, 0))
+                new Proton(new Vector3(0, 0, 0))*/
             };
-            system.Add(objects);
+            system = new PhysicalSystem(minTimeStepS, objects);
             thread = new Thread(new ThreadStart(ThreadRoutine));
             thread.Start();
         }
 
         void ThreadRoutine()
         {
-            var sw = new Stopwatch();
             for (; ; )
             {
-                sw.Restart();
+                long startMs = sw.ElapsedMilliseconds;
                 if (!paused)
-                    while (sw.ElapsedMilliseconds < frameTimeMs)
-                        for(int j = 0; j < 100; j++)
+                {
+                    sw.Start();
+                    while (sw.ElapsedMilliseconds - startMs < frameTimeMs)
+                        for (int j = 0; j < 100; j++)
                             system.Proceed();
+                }
                 else
+                {
+                    sw.Stop();
                     Thread.Sleep(frameTimeMs);
+                }
                 Invalidate();
             }
         }
@@ -70,6 +75,7 @@ namespace SimulationPhysic
                     e.Graphics.DrawCircle(pen, (int)scaledXPos + Width / 2, (int)scaledYPos + Height / 2, (float)Math.Ceiling(b.r * zoom));
             }
             label1.Text = system.time.ToString();
+            label5.Text = (system.time * 1000 / sw.ElapsedMilliseconds).ToString();
             label4.Text = (offsetMouseX + (mouseDown ? startMouseX - MousePosition.X : 0) / zoom) + "; " + (offsetMouseY + (mouseDown ? startMouseY - MousePosition.Y : 0) / zoom);
         }
 

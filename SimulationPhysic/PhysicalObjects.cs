@@ -3,16 +3,19 @@
     public class Electron : Object
     {
         public Electron(Vector3 x) : base(Physic.Constant.electronMass, Physic.Constant.electronCharge, Physic.Constant.electronRadius, x) { }
+        public Electron(Vector3 x, Vector3 v) : base(Physic.Constant.electronMass, Physic.Constant.electronCharge, Physic.Constant.electronRadius, x, v) { }
     }
 
     public class Proton : Object
     {
         public Proton(Vector3 x) : base(Physic.Constant.protonMass, Physic.Constant.protonCharge, Physic.Constant.protonRadius, x) { }
+        public Proton(Vector3 x, Vector3 v) : base(Physic.Constant.protonMass, Physic.Constant.protonCharge, Physic.Constant.protonRadius, x, v) { }
     }
 
     public class Positron : Object
     {
         public Positron(Vector3 x) : base(Physic.Constant.electronMass, -Physic.Constant.electronCharge, Physic.Constant.electronRadius, x) { }
+        public Positron(Vector3 x, Vector3 v) : base(Physic.Constant.electronMass, -Physic.Constant.electronCharge, Physic.Constant.electronRadius, x, v) { }
     }
 
     public class Object

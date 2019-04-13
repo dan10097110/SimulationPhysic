@@ -42,8 +42,8 @@ namespace SimulationPhysic
             public const double electronMass = 9.10938356E-31;
             public const double protonMass = 1.672621898E-27;
             public const double electricConstant = 8.854187817E-12;
-            public const double electronRadius = 1E-4;//1E-18
-            public const double protonRadius = 8.8751E-2;//8.8751E-16
+            public const double electronRadius = 1E-2;//1E-18
+            public const double protonRadius = 8.8751E-1;//8.8751E-16
             public const double gravitationConstant = 6.67408E-11;
         }
     }
