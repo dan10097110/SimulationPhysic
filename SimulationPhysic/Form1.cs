@@ -1,30 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace SimulationPhysic
 {
     public partial class Form1 : Form
     {
-
         //farben nach ladung
 
-        double minTimeStepS = 0.00000001;
+        double minTimeStepS = 0.0000000001;
         double zoom = 50;
 
         Stopwatch sw = new Stopwatch();
         Pen pen;
         PhysicalSystem system;
         Thread thread;
-        double startMouseX = 0, startMouseY = 0, offsetMouseX = 0, offsetMouseY = 0; 
+        double startMouseX = 0, startMouseY = 0, offsetMouseX = 0, offsetMouseY = 0;
         bool mouseDown = false, paused = true;
         int frameTimeMs;
 
@@ -33,9 +26,9 @@ namespace SimulationPhysic
             frameTimeMs = (int)(1000f / int.Parse(textBox1.Text));
             pen = new Pen(Color.Black, 2);
             var objects = new Object[] {
-                new Positron(new Vector3(0, 1, 0), new Vector3(8,0,0)),
-                new Electron(new Vector3(0, -1, 0), new Vector3(-8,0,0))
-                /*new Electron(new Vector3(-5, 0, 0)),
+                new Positron(new Vector3(0, 0.1, 0))/*, new Vector3(8,0,0))*/,
+                new Electron(new Vector3(0, -0.1, 0))/*, new Vector3(-8,0,0)),
+                new Electron(new Vector3(-5, 0, 0)),
                 new Electron(new Vector3(-4, 0, 0)),
                 new Proton(new Vector3(0, 0, 0))*/
             };
@@ -48,13 +41,12 @@ namespace SimulationPhysic
         {
             for (; ; )
             {
-                long startMs = sw.ElapsedMilliseconds;
                 if (!paused)
                 {
+                    long startMs = sw.ElapsedMilliseconds;
                     sw.Start();
                     while (sw.ElapsedMilliseconds - startMs < frameTimeMs)
-                        for (int j = 0; j < 100; j++)
-                            system.Proceed();
+                        system.Proceed(100);
                 }
                 else
                 {
@@ -69,8 +61,8 @@ namespace SimulationPhysic
         {
             foreach (var b in system.objects)
             {
-                double scaledXPos = (b.x.x - offsetMouseX) * zoom - (mouseDown ? startMouseX - MousePosition.X : 0);
-                double scaledYPos = (b.x.y - offsetMouseY) * zoom - (mouseDown ? startMouseY - MousePosition.Y : 0);
+                double scaledXPos = (b.x.X - offsetMouseX) * zoom - (mouseDown ? startMouseX - MousePosition.X : 0);
+                double scaledYPos = (b.x.Y - offsetMouseY) * zoom - (mouseDown ? startMouseY - MousePosition.Y : 0);
                 if (scaledXPos > -Width / 2 && scaledXPos <= Width / 2 && scaledYPos > -Height / 2 && scaledYPos <= Height / 2)
                     e.Graphics.DrawCircle(pen, (int)scaledXPos + Width / 2, (int)scaledYPos + Height / 2, (float)Math.Ceiling(b.r * zoom));
             }
@@ -96,7 +88,7 @@ namespace SimulationPhysic
 
         private void textBox1_TextChanged(object sender, EventArgs e)
         {
-            frameTimeMs = (int)(1000f / float.Parse(textBox1.Text));
+            frameTimeMs = (int)(1000f / double.Parse(textBox1.Text));
         }
 
         private void button2_Click(object sender, EventArgs e)
@@ -106,7 +98,7 @@ namespace SimulationPhysic
 
         private void button3_Click(object sender, EventArgs e)
         {
-            if(paused == true)
+            if (paused == true)
             {
                 paused = false;
                 button3.Text = "| |";
