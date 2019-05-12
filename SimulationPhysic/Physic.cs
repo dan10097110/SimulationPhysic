@@ -38,6 +38,14 @@ namespace SimulationPhysic
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
+            public static Vector3 CoulombGravitation(Object o1, Object o2)
+            {
+                var r = o1.x - o2.x;
+                double sumR = r.Length();
+                return r * ((Constant.gravitationConstant * o1.m * o2.m + o1.q * o2.q / (4 * Math.PI * Constant.electricConstant)) / (sumR * sumR * sumR));
+            }
+
+            [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public static Vector3 Lorentz(double q, Vector3 v, Vector3 B) => q * Vector3.Cross(v, B);
         }
 

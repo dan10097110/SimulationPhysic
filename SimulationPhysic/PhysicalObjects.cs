@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System;
+using System.Runtime.CompilerServices;
 
 namespace SimulationPhysic
 {
@@ -22,56 +23,63 @@ namespace SimulationPhysic
 
     public class Photon : Object
     {
-        public Photon(Vector3 x, Vector3 v, double frequency) : base(Physic.Constant.planckConstant / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed) * frequency, 0, 0, x, Vector3.Normalize(v) * Physic.Constant.ligthSpeed)
+        public Photon(Vector3 x, Vector3 v, double E) : base(Physic.Constant.planckConstant / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed) * E / Physic.Constant.planckConstant, 0, 0, x, Vector3.Normalize(v) * Physic.Constant.ligthSpeed)
         {
             freezeA = true;
         }
     }
 
+
+    //properties auf vars direkt zurückführen
+    //inlining für properties
+    //relativistisch korrekt machen, wahrscheinlich über impuls umgesetztz
     public class Object
     {
-        public bool freezeX, freezeV, freezeA;
+        public bool freezeX, freezeA;
 
-        public Vector3 x, v, a, f;
-        public double m, r, q;
+        public Vector3 x, v, force;
+        public readonly double m_0, r, q;
+        public double m => m_0 / Math.Sqrt(1 - v.LengthSquared() / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed));
 
-        public Vector3 p => m * v;
-        public double waveLenght => Physic.Constant.planckConstant / p.Length();
-
-        public Object(Object o) : this(o.m, o.q, o.r, o.x, o.v, o.a) { }
-        public Object(double m, double q, double r, Vector3 x) : this(m, q, r, x, new Vector3(), new Vector3()) { }
-        public Object(double m, double q, double r, Vector3 x, Vector3 v) : this(m, q, r, x, v, new Vector3()) { }
-        public Object(double m, double q, double r, Vector3 x, Vector3 v, Vector3 a)
+        public Vector3 p_0 => m_0 * v;
+        public Vector3 p
         {
-            this.m = m;
+            get => m * v;
+            set { v = value / Math.Sqrt(m_0 * m_0 + Vector3.Dot(value, value) / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed)); }
+        }
+        public double E => m * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
+        public double E_0 => m_0 * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
+        public double E_kin => (m - m_0) * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
+        public double waveLength
+        {
+            get => Physic.Constant.planckConstant / p.Length();
+            set { p = Vector3.Normalize(v) * (Physic.Constant.planckConstant / value); }
+        }
+
+        public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v) { }
+        public Object(double m_0, double q, double r, Vector3 x) : this(m_0, q, r, x, new Vector3()) { }
+        public Object(double m_0, double q, double r, Vector3 x, Vector3 v)
+        {
+            this.m_0 = m_0;
             this.q = q;
             this.x = x;
             this.v = v;
-            this.a = a;
             this.r = r;
-            f = new Vector3();
+            force = new Vector3();
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        //bei photon move überschreibnen da dort aufjedenfall die geschwindigkeit nicht verändert werden kann
+
+        /*[MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Move(double t)
         {
-            //extrem unperformant
-            //(!freezeA)
-                a += f / m;
+            //extrem unperformant if abfrage
             //if(!freezeX)
-                x += v * t;
+            x += v * t;
             //if (!freezeV)
-                v += a * t;
-            f = new Vector3();
-            a = new Vector3();
-        }
+            p += dp;
+        }*/
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3 GField(Vector3 x) => Physic.Force.Gravitation(1, m, x - this.x);
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public Vector3 EField(Vector3 x) => Physic.Force.Coulomb(1, q, x - this.x);
-
-        public Object Clone() => new Object(m, q, r, x, v, a);
+        public Object Clone() => new Object(m_0, q, r, x, v);
     }
 }
