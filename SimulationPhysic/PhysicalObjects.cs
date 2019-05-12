@@ -45,7 +45,10 @@ namespace SimulationPhysic
         public Vector3 p
         {
             get => m * v;
-            set { v = value / Math.Sqrt(m_0 * m_0 + Vector3.Dot(value, value) / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed)); }
+            set
+            {
+                v = value / Math.Sqrt(m_0 * m_0 + Vector3.Dot(value, value) / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed));
+            }
         }
         public double E => m * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
         public double E_0 => m_0 * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;

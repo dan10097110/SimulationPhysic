@@ -303,7 +303,7 @@ namespace SimulationPhysic
 
     public partial struct Vector3
     {
-        public Double X, Y, Z;
+        public double X, Y, Z;
 
         #region Constructorsent.</param>
         public Vector3(double x, double y, double z)
@@ -454,7 +454,7 @@ namespace SimulationPhysic
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static Vector3 operator *(double left, Vector3 right)
         {
-            return new Vector3(right.X * left, right.Y * left, right.Z * left) * right;
+            return new Vector3(right.X * left, right.Y * left, right.Z * left);
         }
 
         /// <summary>
