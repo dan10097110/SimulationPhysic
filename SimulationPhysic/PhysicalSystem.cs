@@ -71,16 +71,18 @@ namespace SimulationPhysic
                     obj.p += obj.force * proceededTime;
                     obj.force = new Vector3();
                     });
-                /*if(obj1 is Electron && obj2 is Positron)//materie antimaterie reaktion
+                if(Object.MatterAntiMatter(objects[obj1Index], objects[obj2Index]))//materie antimaterie reaktion
                 {
-                    objects.Add(new Photon(schnittpunkt, obj1.p + obj2.p, obj1.E + obj2.E));
+                    double E_ges = obj1.E + obj2.E;
+                    objects.Add(new Photon(schnittpunkt, obj1.p + obj2.p, E_ges / 2));//Energieverteilung wahrscheinlich noch falsch
+                    objects.Add(new Photon(schnittpunkt, obj1.p + obj2.p, E_ges / 2));
 
                     objects.RemoveAt(obj1Index);
                     objects.RemoveAt(obj2Index);
                 }
-                else*/
+                else//elastischer Stoß
                 {
-                    //elastischer Stoß
+                    
 
                     var n_0 = Vector3.Normalize(objects[obj1Index].x - objects[obj2Index].x);
                     var v_s_1 = n_0 * Vector3.Dot(n_0, objects[obj1Index].v);

@@ -7,6 +7,8 @@ namespace SimulationPhysic
     {
         public Electron(Vector3 x) : base(Physic.Constant.electronMass, Physic.Constant.electronCharge, Physic.Constant.electronRadius, x) { }
         public Electron(Vector3 x, Vector3 v) : base(Physic.Constant.electronMass, Physic.Constant.electronCharge, Physic.Constant.electronRadius, x, v) { }
+        public Electron(Vector3 x, bool matter) : base(Physic.Constant.electronMass, (matter ? 1 : -1) * Physic.Constant.electronCharge, Physic.Constant.electronRadius, x, new Vector3(), matter) { }
+        public Electron(Vector3 x, Vector3 v, bool matter) : base(Physic.Constant.electronMass, (matter ? 1 : -1) * Physic.Constant.electronCharge, Physic.Constant.electronRadius, x, v, matter) { }
     }
 
     public class Proton : Object
@@ -15,16 +17,12 @@ namespace SimulationPhysic
         public Proton(Vector3 x, Vector3 v) : base(Physic.Constant.protonMass, Physic.Constant.protonCharge, Physic.Constant.protonRadius, x, v) { }
     }
 
-    public class Positron : Object
-    {
-        public Positron(Vector3 x) : base(Physic.Constant.electronMass, -Physic.Constant.electronCharge, Physic.Constant.electronRadius, x) { }
-        public Positron(Vector3 x, Vector3 v) : base(Physic.Constant.electronMass, -Physic.Constant.electronCharge, Physic.Constant.electronRadius, x, v) { }
-    }
-
     public class Photon : Object
     {
         public Photon(Vector3 x, Vector3 v, double E) : base(Physic.Constant.planckConstant / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed) * E / Physic.Constant.planckConstant, 0, 0, x, Vector3.Normalize(v) * Physic.Constant.ligthSpeed)
         {
+            if(v.IsZero())
+                v = Vector3.Random();
             freezeA = true;
         }
     }
@@ -35,6 +33,7 @@ namespace SimulationPhysic
     //relativistisch korrekt machen, wahrscheinlich über impuls umgesetztz
     public class Object
     {
+        public bool matter;
         public bool freezeX, freezeA;
 
         public Vector3 x, v, force;
@@ -59,15 +58,16 @@ namespace SimulationPhysic
             set { p = Vector3.Normalize(v) * (Physic.Constant.planckConstant / value); }
         }
 
-        public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v) { }
-        public Object(double m_0, double q, double r, Vector3 x) : this(m_0, q, r, x, new Vector3()) { }
-        public Object(double m_0, double q, double r, Vector3 x, Vector3 v)
+        public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v, o.matter) { }
+        public Object(double m_0, double q, double r, Vector3 x) : this(m_0, q, r, x, new Vector3(), true) { }
+        public Object(double m_0, double q, double r, Vector3 x, Vector3 v, bool matter)
         {
             this.m_0 = m_0;
             this.q = q;
             this.x = x;
             this.v = v;
             this.r = r;
+            this.matter = matter;
             force = new Vector3();
         }
 
@@ -84,5 +84,7 @@ namespace SimulationPhysic
         }*/
 
         public Object Clone() => new Object(m_0, q, r, x, v);
+
+        public static bool MatterAntiMatter(Object o1, Object o2) => o1.m_0 = o2.m_0 && o1.q == o2.q && o1.matter != o2.matter;
     }
 }

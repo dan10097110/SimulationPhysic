@@ -107,6 +107,9 @@ namespace SimulationPhysic
         {
             return X * X + Y * Y + Z * Z;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public bool IsZero() => X == 0 && Y == 0 && Z == 0;
         #endregion Public Instance Methods
 
         #region Public Static Methods
@@ -196,6 +199,9 @@ namespace SimulationPhysic
 
             return new Vector3(x, y, z);
         }
+
+        static Random r = new Random();
+        public static Vector3 Random() => new Vector3(r.NextDouble(), r.NextDouble(), r.NextDouble());
         #endregion Public Static Methods
 
         #region Public operator methods
