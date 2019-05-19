@@ -60,6 +60,7 @@ namespace SimulationPhysic
 
         public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v, o.matter) { }
         public Object(double m_0, double q, double r, Vector3 x) : this(m_0, q, r, x, new Vector3(), true) { }
+        public Object(double m_0, double q, double r, Vector3 x, Vector3 v) : this(m_0, q, r, x, v, true) { }
         public Object(double m_0, double q, double r, Vector3 x, Vector3 v, bool matter)
         {
             this.m_0 = m_0;
@@ -83,8 +84,8 @@ namespace SimulationPhysic
             p += dp;
         }*/
 
-        public Object Clone() => new Object(m_0, q, r, x, v);
+        public Object Clone() => new Object(m_0, q, r, x, v, matter);
 
-        public static bool MatterAntiMatter(Object o1, Object o2) => o1.m_0 = o2.m_0 && o1.q == o2.q && o1.matter != o2.matter;
+        public static bool MatterAntiMatter(Object o1, Object o2) => o1.m_0 == o2.m_0 && o1.q == o2.q && o1.matter != o2.matter;
     }
 }
