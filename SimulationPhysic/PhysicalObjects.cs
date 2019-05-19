@@ -33,12 +33,19 @@ namespace SimulationPhysic
     //relativistisch korrekt machen, wahrscheinlich über impuls umgesetztz
     public class Object
     {
-        public bool matter;
-        public bool freezeX, freezeA;
+        public int matter;//1: matter, 0: none, -1: antimatter
+        public bool freezeX, freezeA, stable;
 
         public Vector3 x, v, force;
+        public double E_Extra, t_half, decayProb;
         public readonly double m_0, r, q;
         public double m => m_0 / Math.Sqrt(1 - v.LengthSquared() / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed));
+
+        public double T_half
+        {
+            get => t_half;
+            set {t_half = value;decayProb = 1 - Math.Pow(0.5, proceededTime / value);}
+        }
 
         public Vector3 p_0 => m_0 * v;
         public Vector3 p
@@ -49,7 +56,7 @@ namespace SimulationPhysic
                 v = value / Math.Sqrt(m_0 * m_0 + Vector3.Dot(value, value) / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed));
             }
         }
-        public double E => m * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
+        public double E => m * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed + E_Extra;
         public double E_0 => m_0 * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
         public double E_kin => (m - m_0) * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
         public double waveLength
@@ -61,7 +68,7 @@ namespace SimulationPhysic
         public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v, o.matter) { }
         public Object(double m_0, double q, double r, Vector3 x) : this(m_0, q, r, x, new Vector3(), true) { }
         public Object(double m_0, double q, double r, Vector3 x, Vector3 v) : this(m_0, q, r, x, v, true) { }
-        public Object(double m_0, double q, double r, Vector3 x, Vector3 v, bool matter)
+        public Object(double m_0, double q, double r, Vector3 x, Vector3 v, int matter)
         {
             this.m_0 = m_0;
             this.q = q;
