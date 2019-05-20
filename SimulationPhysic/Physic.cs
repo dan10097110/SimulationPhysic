@@ -60,7 +60,10 @@ namespace SimulationPhysic
             public const double protonRadius = 8.8751E-1;//8.8751E-16
             public const double gravitationConstant = 6.67408E-11;
             public const double planckConstant = 6.62607015E-34;
+            public const double h = planckConstant;
             public const double ligthSpeed = 299792458;
+            public const double c = ligthSpeed;
+            public const double cc = c * c;
         }
     }
 }

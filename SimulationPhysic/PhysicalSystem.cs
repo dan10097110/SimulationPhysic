@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using System.Linq;
+using static SimulationPhysic.Physic.Constant;
 
 namespace SimulationPhysic
 {
@@ -11,7 +11,6 @@ namespace SimulationPhysic
         public readonly double minTimeStep;
         public double time = 0;
         double proceededTime = 0;
-        //readonly bool gravitation = false, electricalF = true;
 
         public PhysicalSystem(double minTimeStep, params Object[] objects)
         {
@@ -26,20 +25,21 @@ namespace SimulationPhysic
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Proceed()
         {
-            for(int i = 0; i < objects.Count; i++)
+            for (int i = 0; i < objects.Count; i++)
             {
-                if(!objects[i].stable)
+                if (!objects[i].stable)
                 {
-                    int i = random.Next(0, int.MaxValue);
-                    if(i < decayProb * int.MaxValue)
+                    if (random.Next(0, int.MaxValue) < (1 - Math.Pow(0.5, proceededTime / objects[i].t_half)) * int.MaxValue)
                     {
                         //auf nicht photonen zerfall anpassen;
-                        double p_p = objects[i].p / 2;
-                        double p_s = Vector3.Cross(Vector3.Random(), objects[i].p).Normalize() * Math.Sqrt(Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed - p_s*p_s);
-                        
-                        double f = objects[i].E / (2 * Physic.Constant.planckconstant);  
+                        var p_p = objects[i].p / 2;
+                        var dir = new Vector3(p_p.X, p_p.Y, p_p.Z);
+                        if (dir == Vector3.Zero)
+                            dir = Vector3.Random();
+                        var p_s = Vector3.Cross(Vector3.Random(), dir).Normalize() * Math.Sqrt(cc - p_p.LengthSquared());
 
-                        objects.AddRange(new Photon(objects[i].x, p_p + p_s), new Photon(objects[i].x, p_p - p_s));
+                        objects.Add(new Photon(objects[i].x, p_p + p_s, objects[i].E / 2));
+                        objects.Add(new Photon(objects[i].x, p_p - p_s, objects[i].E / 2));
                         objects.RemoveAt(i);
                     }
                 }
@@ -85,37 +85,37 @@ namespace SimulationPhysic
             proceededTime = minTimeStep + collisionTime;
             if (collision)
             {
-                objects.ForEach(obj => {
+                objects.ForEach(obj =>
+                {
                     obj.x += obj.v * collisionTime;
                     obj.p += obj.force * proceededTime;
                     obj.force = new Vector3();
-                    });
-                if(Object.MatterAntiMatter(objects[obj1Index], objects[obj2Index]))//materie antimaterie reaktion
+                });
+                if (Object.MatterAntiMatter(objects[obj1Index], objects[obj2Index]))//materie antimaterie reaktion
                 {
                     double E_ges = objects[obj1Index].E + objects[obj2Index].E;
 
-                    double temp = 1 / Math.Sqrt(1 / (objects[obj1Index].v * objects[obj1Index].v) - 1 / (Physic.Constant.ligthSpeed * Physica.Constant.ligthSpeed))+1 / Math.Sqrt(1 / (objects[obj2Index].v * objects[obj2Index].v) - 1 / (Physic.Constant.ligthSpeed * Physica.Constant.ligthSpeed));
-                    double v = 1 / Math.Sqrt(4 / (temp * temp) + 1 / (Physic.Constant.ligthSpeed * Physica.Constant.ligthSpeed));
-                    var fusion = new Object(objects[obj1Index] * 2, 0, 0/*ändern */, schnittpunkt, v, 0));
+                    double temp = 1 / Math.Sqrt(1 / objects[obj1Index].v.LengthSquared() - 1 / cc) + 1 / Math.Sqrt(1 / objects[obj2Index].v.LengthSquared() - 1 / cc);
+                    double v = 1 / Math.Sqrt(4 / (temp * temp) + 1 / cc);
+                    var direction = objects[obj1Index].v + objects[obj2Index].v;
+                    double length = direction.Length();
+                    direction = length == 0 ? new Vector3() : direction / length;
+                    var fusion = new Object(2 * objects[obj1Index].m, 0, 1.06E-10, (objects[obj1Index].x + objects[obj2Index].x) / 2, v * direction, 0);
                     fusion.E_Extra = fusion.E - objects[obj1Index].E - objects[obj2Index].E;
                     fusion.t_half = 1.25E-10;//anpassen an nicht ELEKTRON POSITRON
+                    fusion.stable = false;
                     objects.Add(fusion);
                     objects.RemoveAt(obj1Index);
                     objects.RemoveAt(obj2Index);
                 }
                 else//elastischer Stoß
                 {
-
-
-                    var n_0 = Vector3.Normalize(objects[obj1Index].x - objects[obj2Index].x);
+                    var n_0 = (objects[obj1Index].x - objects[obj2Index].x).Normalize();
                     var v_s_1 = n_0 * Vector3.Dot(n_0, objects[obj1Index].v);
                     var v_s_2 = n_0 * Vector3.Dot(n_0, objects[obj2Index].v);
 
 
-
                     //wird direkt v verändert könte relativisitsch falsch sein
-
-
 
 
                     objects[obj1Index].v += (v_s_2 * (2 * objects[obj2Index].m) + v_s_1 * (objects[obj1Index].m - objects[obj2Index].m)) / (objects[obj1Index].m + objects[obj2Index].m) - v_s_1;
@@ -143,7 +143,8 @@ namespace SimulationPhysic
                 }
             }
             else
-                objects.ForEach(obj => {
+                objects.ForEach(obj =>
+                {
                     obj.p += obj.force * proceededTime;
                     obj.force = new Vector3();
                 });

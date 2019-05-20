@@ -1,28 +1,34 @@
 ﻿using System;
+using static SimulationPhysic.Physic.Constant;
 using System.Runtime.CompilerServices;
 
 namespace SimulationPhysic
 {
     public class Electron : Object
     {
-        public Electron(Vector3 x) : base(Physic.Constant.electronMass, Physic.Constant.electronCharge, Physic.Constant.electronRadius, x) { }
-        public Electron(Vector3 x, Vector3 v) : base(Physic.Constant.electronMass, Physic.Constant.electronCharge, Physic.Constant.electronRadius, x, v) { }
-        public Electron(Vector3 x, bool matter) : base(Physic.Constant.electronMass, (matter ? 1 : -1) * Physic.Constant.electronCharge, Physic.Constant.electronRadius, x, new Vector3(), matter) { }
-        public Electron(Vector3 x, Vector3 v, bool matter) : base(Physic.Constant.electronMass, (matter ? 1 : -1) * Physic.Constant.electronCharge, Physic.Constant.electronRadius, x, v, matter) { }
+        public Electron(Vector3 x) : this(x, new Vector3(), 1) { }
+        public Electron(Vector3 x, Vector3 v) : this(x, v, 1) { }
+        public Electron(Vector3 x, int matter) : this(x, new Vector3(), matter) { }
+        public Electron(Vector3 x, Vector3 v, int matter) : base(electronMass, matter * electronCharge, electronRadius, x, v, matter) { }
     }
 
     public class Proton : Object
     {
-        public Proton(Vector3 x) : base(Physic.Constant.protonMass, Physic.Constant.protonCharge, Physic.Constant.protonRadius, x) { }
-        public Proton(Vector3 x, Vector3 v) : base(Physic.Constant.protonMass, Physic.Constant.protonCharge, Physic.Constant.protonRadius, x, v) { }
+        public Proton(Vector3 x) : this(x, new Vector3()) { }
+        public Proton(Vector3 x, Vector3 v) : base(protonMass, protonCharge, protonRadius, x, v) { }
     }
 
     public class Photon : Object
     {
-        public Photon(Vector3 x, Vector3 v, double E) : base(Physic.Constant.planckConstant / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed) * E / Physic.Constant.planckConstant, 0, 0, x, Vector3.Normalize(v) * Physic.Constant.ligthSpeed)
+        public override Vector3 f { get; set; }
+        public override double m => h * f.Length() / cc;
+        public override double E => h * f.Length();
+
+        public Photon(Vector3 x, Vector3 direction, double E) : base(0, 0, 0, x, direction.Normalize() * c)
         {
-            if(v.IsZero())
-                v = Vector3.Random();
+            f = direction.Normalize() * E / h;
+            if (direction.IsZero())
+                this.v = Vector3.Random().Normalize() * c;
             freezeA = true;
         }
     }
@@ -34,40 +40,31 @@ namespace SimulationPhysic
     public class Object
     {
         public int matter;//1: matter, 0: none, -1: antimatter
-        public bool freezeX, freezeA, stable;
+        public bool freezeX, freezeA, stable = true;
 
         public Vector3 x, v, force;
-        public double E_Extra, t_half, decayProb;
+        public double E_Extra, t_half;
         public readonly double m_0, r, q;
-        public double m => m_0 / Math.Sqrt(1 - v.LengthSquared() / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed));
-
-        public double T_half
-        {
-            get => t_half;
-            set {t_half = value;decayProb = 1 - Math.Pow(0.5, proceededTime / value);}
-        }
+        public virtual double m => m_0 / Math.Sqrt(1 - v.LengthSquared() / cc);
 
         public Vector3 p_0 => m_0 * v;
         public Vector3 p
         {
             get => m * v;
-            set
-            {
-                v = value / Math.Sqrt(m_0 * m_0 + Vector3.Dot(value, value) / (Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed));
-            }
+            set => v = value / Math.Sqrt(m_0 * m_0 + Vector3.Dot(value, value) / cc);
         }
-        public double E => m * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed + E_Extra;
-        public double E_0 => m_0 * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
-        public double E_kin => (m - m_0) * Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
-        public double waveLength
+        public virtual double E => m * cc + E_Extra;
+        public double E_0 => m_0 * cc;
+        public double E_kin => (m - m_0) * cc;
+        public virtual Vector3 f
         {
-            get => Physic.Constant.planckConstant / p.Length();
-            set { p = Vector3.Normalize(v) * (Physic.Constant.planckConstant / value); }
+            get => c * p / h;
+            set => p = h * value / c;
         }
 
         public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v, o.matter) { }
-        public Object(double m_0, double q, double r, Vector3 x) : this(m_0, q, r, x, new Vector3(), true) { }
-        public Object(double m_0, double q, double r, Vector3 x, Vector3 v) : this(m_0, q, r, x, v, true) { }
+        public Object(double m_0, double q, double r, Vector3 x) : this(m_0, q, r, x, new Vector3(), 1) { }
+        public Object(double m_0, double q, double r, Vector3 x, Vector3 v) : this(m_0, q, r, x, v, 1) { }
         public Object(double m_0, double q, double r, Vector3 x, Vector3 v, int matter)
         {
             this.m_0 = m_0;
@@ -93,6 +90,7 @@ namespace SimulationPhysic
 
         public Object Clone() => new Object(m_0, q, r, x, v, matter);
 
-        public static bool MatterAntiMatter(Object o1, Object o2) => o1.m_0 == o2.m_0 && o1.q == o2.q && o1.matter != o2.matter;
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool MatterAntiMatter(Object o1, Object o2) => o1.m_0 == o2.m_0 && o1.q == -o2.q && o1.matter == -o2.matter && o1.matter != 0;
     }
 }

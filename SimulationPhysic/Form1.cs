@@ -10,7 +10,7 @@ namespace SimulationPhysic
     {
         //farben nach ladung
 
-        double minTimeStepS = 0.000001;
+        double minTimeStepS = 0.00000005;
         double zoom = 50;
 
         Stopwatch sw = new Stopwatch();
@@ -26,13 +26,13 @@ namespace SimulationPhysic
             frameTimeMs = (int)(1000f / int.Parse(textBox1.Text));
             pen = new Pen(Color.Black, 2);
             var objects = new Object[] {
-                new Positron(new Vector3(0, 1, 0), new Vector3(8,0,0)),
-                new Electron(new Vector3(0, -1, 0), new Vector3(-8,0,0)),
+                new Electron(new Vector3(0, 1, 0), -1),
+                new Electron(new Vector3(0, -1, 0))/*,
                 new Electron(new Vector3(-4, 0, 0)),
                 new Electron(new Vector3(5, 0, 0)),
                 new Electron(new Vector3(-4, 6, 0)),
                 new Proton(new Vector3(0, 0, 0)),
-                new Proton(new Vector3(0, 4, 0))
+                new Proton(new Vector3(0, 4, 0))*/
                 
                 /*new Electron(new Vector3(0, -1, 0), new Vector3(-8,0,0)),
                 new Positron(new Vector3(0, 1, 0), new Vector3(8,0,0))*/

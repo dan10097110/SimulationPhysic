@@ -108,6 +108,18 @@ namespace SimulationPhysic
             return X * X + Y * Y + Z * Z;
         }
 
+        /// <summary>
+        /// Returns a vector with the same direction as the given vector, but with a length of 1.
+        /// </summary>
+        /// <param name="value">The vector to normalize.</param>
+        /// <returns>The normalized vector.</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public Vector3 Normalize()
+        {
+            double length = Math.Sqrt(X * X + Y * Y + Z * Z);
+            return new Vector3(X / length, Y / length, Z / length);
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsZero() => X == 0 && Y == 0 && Z == 0;
         #endregion Public Instance Methods
@@ -143,18 +155,6 @@ namespace SimulationPhysic
             double dz = value1.Z - value2.Z;
 
             return dx * dx + dy * dy + dz * dz;
-        }
-
-        /// <summary>
-        /// Returns a vector with the same direction as the given vector, but with a length of 1.
-        /// </summary>
-        /// <param name="value">The vector to normalize.</param>
-        /// <returns>The normalized vector.</returns>
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static Vector3 Normalize(Vector3 value)
-        {
-            double length = System.Math.Sqrt(value.X * value.X + value.Y * value.Y + value.Z * value.Z);
-            return new Vector3(value.X / length, value.Y / length, value.Z / length);
         }
 
         /// <summary>
@@ -202,6 +202,7 @@ namespace SimulationPhysic
 
         static Random r = new Random();
         public static Vector3 Random() => new Vector3(r.NextDouble(), r.NextDouble(), r.NextDouble());
+        public static Vector3 Random(double max) => new Vector3(r.NextDouble() * max, r.NextDouble() * max, r.NextDouble() * max);
         #endregion Public Static Methods
 
         #region Public operator methods
