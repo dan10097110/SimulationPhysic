@@ -23,8 +23,19 @@ namespace SimulationPhysic
         public override Vector3 f { get; set; }
         public override double m => h * f.Length() / cc;
         public override double E => h * f.Length();
+        public override Vector3 p
+        {
+            get => h * f / c;
+            set => f = p * c / h;
+        }
 
-        public Photon(Vector3 x, Vector3 direction, double E) : base(0, 0, 0, x, direction.Normalize() * c)
+        public override Vector3 Force
+        {
+            get => force;
+            set => force = new Vector3();
+        }
+
+        public Photon(Vector3 x, Vector3 direction, double E) : base(0, 0, 1E-40, x, direction.Normalize() * c)
         {
             f = direction.Normalize() * E / h;
             if (direction.IsZero())
@@ -42,13 +53,19 @@ namespace SimulationPhysic
         public int matter;//1: matter, 0: none, -1: antimatter
         public bool freezeX, freezeA, stable = true;
 
-        public Vector3 x, v, force;
+        public Vector3 x, v;
+        protected Vector3 force;
+        public virtual Vector3 Force
+        {
+            get => force;
+            set => force = value;
+        }
         public double E_Extra, t_half;
         public readonly double m_0, r, q;
         public virtual double m => m_0 / Math.Sqrt(1 - v.LengthSquared() / cc);
 
         public Vector3 p_0 => m_0 * v;
-        public Vector3 p
+        public virtual Vector3 p
         {
             get => m * v;
             set => v = value / Math.Sqrt(m_0 * m_0 + Vector3.Dot(value, value) / cc);
@@ -76,17 +93,8 @@ namespace SimulationPhysic
             force = new Vector3();
         }
 
-        //bei photon move überschreibnen da dort aufjedenfall die geschwindigkeit nicht verändert werden kann
-
-        /*[MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Move(double t)
-        {
-            //extrem unperformant if abfrage
-            //if(!freezeX)
-            x += v * t;
-            //if (!freezeV)
-            p += dp;
-        }*/
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public virtual void Move(double t) => x += v * t;
 
         public Object Clone() => new Object(m_0, q, r, x, v, matter);
 

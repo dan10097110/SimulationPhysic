@@ -64,6 +64,7 @@ namespace SimulationPhysic
 
         protected override void OnPaint(PaintEventArgs e)
         {
+            var obj = system.objects.ToArray();
             foreach (var b in system.objects)
             {
                 double scaledXPos = (b.x.X - offsetMouseX) * zoom - (mouseDown ? startMouseX - MousePosition.X : 0);

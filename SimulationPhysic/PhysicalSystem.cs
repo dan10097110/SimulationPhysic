@@ -49,11 +49,11 @@ namespace SimulationPhysic
                 for (int j = 0; j < i; j++)
                 {
                     var f = Physic.Force.CoulombGravitation(objects[i], objects[j]);
-                    objects[i].force += f;
-                    objects[j].force += -f;
+                    objects[i].Force += f;
+                    objects[j].Force -= f;
                 }
 
-            objects.ForEach(obj => obj.x += obj.v * minTimeStep);
+            objects.ForEach(obj => obj.Move(minTimeStep));
 
             int obj1Index = -1, obj2Index = -1;
             double collisionTime = 0;
@@ -88,8 +88,8 @@ namespace SimulationPhysic
                 objects.ForEach(obj =>
                 {
                     obj.x += obj.v * collisionTime;
-                    obj.p += obj.force * proceededTime;
-                    obj.force = new Vector3();
+                    obj.p += obj.Force * proceededTime;
+                    obj.Force = new Vector3();
                 });
                 if (Object.MatterAntiMatter(objects[obj1Index], objects[obj2Index]))//materie antimaterie reaktion
                 {
@@ -110,43 +110,46 @@ namespace SimulationPhysic
                 }
                 else//elastischer Stoß
                 {
-                    var n_0 = (objects[obj1Index].x - objects[obj2Index].x).Normalize();
-                    var v_s_1 = n_0 * Vector3.Dot(n_0, objects[obj1Index].v);
-                    var v_s_2 = n_0 * Vector3.Dot(n_0, objects[obj2Index].v);
+                    if(!(objects[obj1Index].m == 0 && objects[obj1Index].m == 0))
+                    {
+                        var n_0 = (objects[obj1Index].x - objects[obj2Index].x).Normalize();
+                        var v_s_1 = n_0 * Vector3.Dot(n_0, objects[obj1Index].v);
+                        var v_s_2 = n_0 * Vector3.Dot(n_0, objects[obj2Index].v);
 
 
-                    //wird direkt v verändert könte relativisitsch falsch sein
+                        //wird direkt v verändert könte relativisitsch falsch sein
 
 
-                    objects[obj1Index].v += (v_s_2 * (2 * objects[obj2Index].m) + v_s_1 * (objects[obj1Index].m - objects[obj2Index].m)) / (objects[obj1Index].m + objects[obj2Index].m) - v_s_1;
-                    objects[obj2Index].v += (v_s_1 * (2 * objects[obj1Index].m) + v_s_2 * (objects[obj2Index].m - objects[obj1Index].m)) / (objects[obj1Index].m + objects[obj2Index].m) - v_s_2;
+                        objects[obj1Index].v += (v_s_2 * (2 * objects[obj2Index].m) + v_s_1 * (objects[obj1Index].m - objects[obj2Index].m)) / (objects[obj1Index].m + objects[obj2Index].m) - v_s_1;
+                        objects[obj2Index].v += (v_s_1 * (2 * objects[obj1Index].m) + v_s_2 * (objects[obj2Index].m - objects[obj1Index].m)) / (objects[obj1Index].m + objects[obj2Index].m) - v_s_2;
 
-                    /* var cc = Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
-                    var c = Physic.Constant.ligthSpeed;
+                        /* var cc = Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
+                        var c = Physic.Constant.ligthSpeed;
 
-                    var p_1 = v_s_1 * objects[obj1Index].m;
-                    var p_2 = v_s_2 * objects[obj2Index].m;
-                    var p = p_1 + p_2;
+                        var p_1 = v_s_1 * objects[obj1Index].m;
+                        var p_2 = v_s_2 * objects[obj2Index].m;
+                        var p = p_1 + p_2;
 
-                    var E_1 = objects[obj1Index].m * cc;
-                    var E_2 = objects[obj2Index].m * cc;
-                    var E = E_1 + E_2;
+                        var E_1 = objects[obj1Index].m * cc;
+                        var E_2 = objects[obj2Index].m * cc;
+                        var E = E_1 + E_2;
 
-                    var E_01 = objects[obj1Index].m_0 * cc;
-                    var E_02 = objects[obj2Index].m_0 * cc;
+                        var E_01 = objects[obj1Index].m_0 * cc;
+                        var E_02 = objects[obj2Index].m_0 * cc;
 
-                    var v = E * E + E_1 * E_1 - E_2 * E_2 - cc * Vector3.Dot(p, p);
-                    var v1 = (p * c * v + Math.Sqrt(v * v * (Vector3.Dot(p, p) * cc - cc * Vector3.Dot(p, p) + E * E) + 4 * E * E * E_01 * E_01 * (cc * Vector3.Dot(p, p) - E * E)));
+                        var v = E * E + E_1 * E_1 - E_2 * E_2 - cc * Vector3.Dot(p, p);
+                        var v1 = (p * c * v + Math.Sqrt(v * v * (Vector3.Dot(p, p) * cc - cc * Vector3.Dot(p, p) + E * E) + 4 * E * E * E_01 * E_01 * (cc * Vector3.Dot(p, p) - E * E)));
 
-                    objects[obj1Index].p += v1 / (2 * c * (cc * Vector3.Dot(p, p) - E * E)) - v_s_1;
-                    objects[obj2Index].p +=  - v_s_2;*/
+                        objects[obj1Index].p += v1 / (2 * c * (cc * Vector3.Dot(p, p) - E * E)) - v_s_1;
+                        objects[obj2Index].p +=  - v_s_2;*/
+                    }
                 }
             }
             else
                 objects.ForEach(obj =>
                 {
-                    obj.p += obj.force * proceededTime;
-                    obj.force = new Vector3();
+                    obj.p += obj.Force * proceededTime;
+                    obj.Force = new Vector3();
                 });
 
             time += proceededTime;
