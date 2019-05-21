@@ -35,11 +35,11 @@ namespace SimulationPhysic
             set => force = new Vector3();
         }
 
-        public Photon(Vector3 x, Vector3 direction, double E) : base(0, 0, 1E-40, x, direction.Normalize() * c)
+        public Photon(Vector3 x, Vector3 direction, double E) : base(0, 0, 1E-40, x, direction.Normalize() * 1)
         {
             f = direction.Normalize() * E / h;
             if (direction.IsZero())
-                this.v = Vector3.Random().Normalize() * c;
+                this.v = Vector3.Random().Normalize() * 1;
             freezeA = true;
         }
     }
@@ -94,11 +94,18 @@ namespace SimulationPhysic
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public virtual void Move(double t) => x += v * t;
+        public void Move(double t) => x += v * t;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void Accelerate(double t)
+        {
+            p += Force * t;
+            Force = new Vector3();
+        }
 
         public Object Clone() => new Object(m_0, q, r, x, v, matter);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool MatterAntiMatter(Object o1, Object o2) => o1.m_0 == o2.m_0 && o1.q == -o2.q && o1.matter == -o2.matter && o1.matter != 0;
+        public static bool MatterAntiMatter(Object o1, Object o2) => o1.m_0 == o2.m_0 && o1.q == -o2.q && o1.r == o2.r && o1.matter == -o2.matter && o1.matter != 0;
     }
 }

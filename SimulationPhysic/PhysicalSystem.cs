@@ -55,7 +55,7 @@ namespace SimulationPhysic
 
             objects.ForEach(obj => obj.Move(minTimeStep));
 
-            int obj1Index = -1, obj2Index = -1;
+            int index1 = -1, index2 = -1;
             double collisionTime = 0;
             bool collision = false;
             for (int i = 1; i < objects.Count; i++)
@@ -76,8 +76,8 @@ namespace SimulationPhysic
                         {
                             collision = true;
                             collisionTime = t;
-                            obj1Index = i;
-                            obj2Index = j;
+                            index1 = i;
+                            index2 = j;
                         }
                     }
                 }
@@ -87,41 +87,40 @@ namespace SimulationPhysic
             {
                 objects.ForEach(obj =>
                 {
-                    obj.x += obj.v * collisionTime;
-                    obj.p += obj.Force * proceededTime;
-                    obj.Force = new Vector3();
+                    obj.Move(collisionTime);
+                    obj.Accelerate(proceededTime);
                 });
-                if (Object.MatterAntiMatter(objects[obj1Index], objects[obj2Index]))//materie antimaterie reaktion
+                if (Object.MatterAntiMatter(objects[index1], objects[index2]))//materie antimaterie reaktion
                 {
-                    double E_ges = objects[obj1Index].E + objects[obj2Index].E;
+                    double E_ges = objects[index1].E + objects[index2].E;
 
-                    double temp = 1 / Math.Sqrt(1 / objects[obj1Index].v.LengthSquared() - 1 / cc) + 1 / Math.Sqrt(1 / objects[obj2Index].v.LengthSquared() - 1 / cc);
+                    double temp = 1 / Math.Sqrt(1 / objects[index1].v.LengthSquared() - 1 / cc) + 1 / Math.Sqrt(1 / objects[index2].v.LengthSquared() - 1 / cc);
                     double v = 1 / Math.Sqrt(4 / (temp * temp) + 1 / cc);
-                    var direction = objects[obj1Index].v + objects[obj2Index].v;
+                    var direction = objects[index1].v + objects[index2].v;
                     double length = direction.Length();
                     direction = length == 0 ? new Vector3() : direction / length;
-                    var fusion = new Object(2 * objects[obj1Index].m, 0, 1.06E-10, (objects[obj1Index].x + objects[obj2Index].x) / 2, v * direction, 0);
-                    fusion.E_Extra = fusion.E - objects[obj1Index].E - objects[obj2Index].E;
+                    var fusion = new Object(2 * objects[index1].m, 0, 1.06E-10, (objects[index1].x + objects[index2].x) / 2, v * direction, 0);
+                    fusion.E_Extra = fusion.E - objects[index1].E - objects[index2].E;
                     fusion.t_half = 1.25E-10;//anpassen an nicht ELEKTRON POSITRON
                     fusion.stable = false;
                     objects.Add(fusion);
-                    objects.RemoveAt(obj1Index);
-                    objects.RemoveAt(obj2Index);
+                    objects.RemoveAt(index1);
+                    objects.RemoveAt(index2);
                 }
                 else//elastischer Stoß
                 {
-                    if(!(objects[obj1Index].m == 0 && objects[obj1Index].m == 0))
+                    if(!(objects[index1].m == 0 && objects[index1].m == 0))
                     {
-                        var n_0 = (objects[obj1Index].x - objects[obj2Index].x).Normalize();
-                        var v_s_1 = n_0 * Vector3.Dot(n_0, objects[obj1Index].v);
-                        var v_s_2 = n_0 * Vector3.Dot(n_0, objects[obj2Index].v);
+                        var n_0 = (objects[index1].x - objects[index2].x).Normalize();
+                        var v_s_1 = n_0 * Vector3.Dot(n_0, objects[index1].v);
+                        var v_s_2 = n_0 * Vector3.Dot(n_0, objects[index2].v);
 
 
                         //wird direkt v verändert könte relativisitsch falsch sein
 
 
-                        objects[obj1Index].v += (v_s_2 * (2 * objects[obj2Index].m) + v_s_1 * (objects[obj1Index].m - objects[obj2Index].m)) / (objects[obj1Index].m + objects[obj2Index].m) - v_s_1;
-                        objects[obj2Index].v += (v_s_1 * (2 * objects[obj1Index].m) + v_s_2 * (objects[obj2Index].m - objects[obj1Index].m)) / (objects[obj1Index].m + objects[obj2Index].m) - v_s_2;
+                        objects[index1].v += (v_s_2 * (2 * objects[index2].m) + v_s_1 * (objects[index1].m - objects[index2].m)) / (objects[index1].m + objects[index2].m) - v_s_1;
+                        objects[index2].v += (v_s_1 * (2 * objects[index1].m) + v_s_2 * (objects[index2].m - objects[index1].m)) / (objects[index1].m + objects[index2].m) - v_s_2;
 
                         /* var cc = Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
                         var c = Physic.Constant.ligthSpeed;
@@ -146,11 +145,7 @@ namespace SimulationPhysic
                 }
             }
             else
-                objects.ForEach(obj =>
-                {
-                    obj.p += obj.Force * proceededTime;
-                    obj.Force = new Vector3();
-                });
+                objects.ForEach(obj => obj.Accelerate(proceededTime));
 
             time += proceededTime;
         }

@@ -26,7 +26,7 @@ namespace SimulationPhysic
             frameTimeMs = (int)(1000f / int.Parse(textBox1.Text));
             pen = new Pen(Color.Black, 2);
             var objects = new Object[] {
-                new Electron(new Vector3(0, 1, 0), -1),
+                new Electron(new Vector3(0, 1, 0), new Vector3(0, -10000000, 0), -1),
                 new Electron(new Vector3(0, -1, 0))/*,
                 new Electron(new Vector3(-4, 0, 0)),
                 new Electron(new Vector3(5, 0, 0)),
