@@ -1,6 +1,6 @@
 ﻿using System;
-using static SimulationPhysic.Physic.Constant;
 using System.Runtime.CompilerServices;
+using static SimulationPhysic.Physic.Constant;
 
 namespace SimulationPhysic
 {
@@ -20,6 +20,8 @@ namespace SimulationPhysic
 
     public class Photon : Object
     {
+        Vector3 force;
+
         public override Vector3 f { get; set; }
         public override double m => h * f.Length() / cc;
         public override double E => h * f.Length();
@@ -34,12 +36,11 @@ namespace SimulationPhysic
             set => force = new Vector3();
         }
 
-        public Photon(Vector3 x, Vector3 direction, double E) : base(0, 0, 1E-40, x, direction.Normalize() * 1)
+        public Photon(Vector3 x, Vector3 direction, double E) : base(0, 0, 1E-40, x, direction.Normalize() * c)
         {
             f = direction.Normalize() * E / h;
             if (direction.IsZero())
-                this.v = Vector3.Random().Normalize() * 1;
-            freezeA = true;
+                this.v = Vector3.Random().Normalize() * c;
         }
     }
 
@@ -50,14 +51,9 @@ namespace SimulationPhysic
         public int matter;//1: matter, 0: none, -1: antimatter
         public bool stable = true;
         public Vector3 x, v;
-        protected Vector3 force;
         public readonly double m_0, r, q, E_Extra, t_half;
 
-        public virtual Vector3 Force
-        {
-            get => force;
-            set => force = value;
-        }
+        public virtual Vector3 Force { get; set; }
         public virtual double m => m_0 / Math.Sqrt(1 - v.LengthSquared() / cc);
         public Vector3 p_0 => m_0 * v;
         public virtual Vector3 p
@@ -74,7 +70,7 @@ namespace SimulationPhysic
             set => p = h * value / c;
         }
 
-        public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v, o.matter, o.E_Extra, o.stable, o.t_half, o.force) { }
+        public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v, o.matter, o.E_Extra, o.stable, o.t_half, o.Force) { }
         public Object(double m_0, double q, double r, Vector3 x) : this(m_0, q, r, x, new Vector3(), 1) { }
         public Object(double m_0, double q, double r, Vector3 x, Vector3 v) : this(m_0, q, r, x, v, 1) { }
         public Object(double m_0, double q, double r, Vector3 x, Vector3 v, int matter) : this(m_0, q, r, x, v, matter, 0, true, 0, new Vector3()) { }
@@ -89,7 +85,7 @@ namespace SimulationPhysic
             this.E_Extra = E_Extra;
             this.stable = stable;
             this.t_half = t_half;
-            thos.force = force;
+            this.Force = force;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -105,6 +101,6 @@ namespace SimulationPhysic
         public Object Clone() => new Object(this);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool MatterAntiMatter(Object o1, Object o2) => o1.m_0 == o2.m_0 && o1.q == -o2.q && o1.r == o2.r && o1.matter == -o2.matter && o1.matter != 0;
+        public static bool Annihilating(Object o1, Object o2) => o1.m_0 == o2.m_0 && o1.q == -o2.q && o1.r == o2.r && o1.matter == -o2.matter && o1.matter != 0;
     }
 }
