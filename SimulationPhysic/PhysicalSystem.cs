@@ -101,7 +101,7 @@ namespace SimulationPhysic
                     if (w >= 0)
                     {
                         double t = (-dvdx - Math.Sqrt(w)) / dvdv;
-                        if (t > 0 && t < minTimeStep && t <= collisionTime)
+                        if (t > 0 && t <= collisionTime)
                         {
                             collision = true;
                             collisionTime = t;
