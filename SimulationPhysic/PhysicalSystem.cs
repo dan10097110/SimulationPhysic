@@ -90,8 +90,8 @@ namespace SimulationPhysic
                     obj.Move(collisionTime);
                     obj.Accelerate(proceededTime);
                 });
-                if (Object.MatterAntiMatter(objects[index1], objects[index2]))//materie antimaterie reaktion
-                {
+                if (Object.MatterAntiMatter(objects[index1], objects[index2]))
+                {//anpassen an nicht ELEKTRON POSITRON
                     double E_ges = objects[index1].E + objects[index2].E;
 
                     double temp = 1 / Math.Sqrt(1 / objects[index1].v.LengthSquared() - 1 / cc) + 1 / Math.Sqrt(1 / objects[index2].v.LengthSquared() - 1 / cc);
@@ -99,10 +99,7 @@ namespace SimulationPhysic
                     var direction = objects[index1].v + objects[index2].v;
                     double length = direction.Length();
                     direction = length == 0 ? new Vector3() : direction / length;
-                    var fusion = new Object(2 * objects[index1].m, 0, 1.06E-10, (objects[index1].x + objects[index2].x) / 2, v * direction, 0);
-                    fusion.E_Extra = fusion.E - objects[index1].E - objects[index2].E;
-                    fusion.t_half = 1.25E-10;//anpassen an nicht ELEKTRON POSITRON
-                    fusion.stable = false;
+                    var fusion = new Object(2 * objects[index1].m, 0, 1.06E-10, (objects[index1].x + objects[index2].x) / 2, v * direction, 0, fusion.E - objects[index1].E - objects[index2].E, false, 1.25E-10, new Vector3());
                     objects.Add(fusion);
                     objects.RemoveAt(index1);
                     objects.RemoveAt(index2);

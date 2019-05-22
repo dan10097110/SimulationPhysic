@@ -28,7 +28,6 @@ namespace SimulationPhysic
             get => h * f / c;
             set => f = p * c / h;
         }
-
         public override Vector3 Force
         {
             get => force;
@@ -44,45 +43,42 @@ namespace SimulationPhysic
         }
     }
 
-
-    //properties auf vars direkt zurückführen
     //inlining für properties
     //relativistisch korrekt machen, wahrscheinlich über impuls umgesetztz
     public class Object
     {
         public int matter;//1: matter, 0: none, -1: antimatter
-        public bool freezeX, freezeA, stable = true;
-
+        public bool stable = true;
         public Vector3 x, v;
         protected Vector3 force;
+        public readonly double m_0, r, q, E_Extra, t_half;
+
         public virtual Vector3 Force
         {
             get => force;
             set => force = value;
         }
-        public double E_Extra, t_half;
-        public readonly double m_0, r, q;
         public virtual double m => m_0 / Math.Sqrt(1 - v.LengthSquared() / cc);
-
         public Vector3 p_0 => m_0 * v;
         public virtual Vector3 p
         {
             get => m * v;
-            set => v = value / Math.Sqrt(m_0 * m_0 + Vector3.Dot(value, value) / cc);
+            set => v = value / Math.Sqrt(m_0 * m_0 + value.LengthSquared() / cc);
         }
         public virtual double E => m * cc + E_Extra;
         public double E_0 => m_0 * cc;
-        public double E_kin => (m - m_0) * cc;
+        public double E_kin => (1 / Math.Sqrt(1 - v.LengthSquared() / cc) - 1) * m_0 * cc;
         public virtual Vector3 f
         {
             get => c * p / h;
             set => p = h * value / c;
         }
 
-        public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v, o.matter) { }
+        public Object(Object o) : this(o.m_0, o.q, o.r, o.x, o.v, o.matter, o.E_Extra, o.stable, o.t_half, o.force) { }
         public Object(double m_0, double q, double r, Vector3 x) : this(m_0, q, r, x, new Vector3(), 1) { }
         public Object(double m_0, double q, double r, Vector3 x, Vector3 v) : this(m_0, q, r, x, v, 1) { }
-        public Object(double m_0, double q, double r, Vector3 x, Vector3 v, int matter)
+        public Object(double m_0, double q, double r, Vector3 x, Vector3 v, int matter) : this(m_0, q, r, x, v, matter, 0, true, 0, new Vector3()) { }
+        public Object(double m_0, double q, double r, Vector3 x, Vector3 v, int matter, double E_Extra, bool stable, double t_half, Vector3 force)
         {
             this.m_0 = m_0;
             this.q = q;
@@ -90,7 +86,10 @@ namespace SimulationPhysic
             this.v = v;
             this.r = r;
             this.matter = matter;
-            force = new Vector3();
+            this.E_Extra = E_Extra;
+            this.stable = stable;
+            this.t_half = t_half;
+            thos.force = force;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -103,7 +102,7 @@ namespace SimulationPhysic
             Force = new Vector3();
         }
 
-        public Object Clone() => new Object(m_0, q, r, x, v, matter);
+        public Object Clone() => new Object(this);
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool MatterAntiMatter(Object o1, Object o2) => o1.m_0 == o2.m_0 && o1.q == -o2.q && o1.r == o2.r && o1.matter == -o2.matter && o1.matter != 0;
