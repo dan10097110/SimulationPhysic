@@ -49,7 +49,7 @@ namespace SimulationPhysic
             {
                 if (Object.Annihilating(objects[index1], objects[index2]))
                     Annihilate(index1, index2);
-                else if (!(objects[index1].m == 0 && objects[index2].m == 0))//bei Get firs collision bereits prüfen ob teilchen interagieren
+                else
                     ElasticCollision(objects[index1], objects[index2]);
             }
 
@@ -91,25 +91,26 @@ namespace SimulationPhysic
         {
             for (int i = 1; i < objects.Count; i++)
                 for (int j = 0; j < i; j++)
-                {
-                    var dv = objects[i].v - objects[j].v;
-                    var dx = objects[i].x - objects[j].x;
-                    double dvdx = Vector3.Dot(dv, dx);
-                    double dvdv = dv.LengthSquared();
-                    double d = objects[i].r + objects[j].r;
-                    double w = dvdx * dvdx + (d * d - dx.LengthSquared()) * dvdv;
-                    if (w >= 0)
+                    if(!(objects[i].m == 0 && objects[j].m == 0))
                     {
-                        double t = (-dvdx - Math.Sqrt(w)) / dvdv;
-                        if (t > 0 && t <= collisionTime)
+                        var dv = objects[i].v - objects[j].v;
+                        var dx = objects[i].x - objects[j].x;
+                        double dvdx = Vector3.Dot(dv, dx);
+                        double dvdv = dv.LengthSquared();
+                        double d = objects[i].r + objects[j].r;
+                        double w = dvdx * dvdx + (d * d - dx.LengthSquared()) * dvdv;
+                        if (w >= 0)
                         {
-                            collision = true;
-                            collisionTime = t;
-                            index1 = i;
-                            index2 = j;
+                            double t = (-dvdx - Math.Sqrt(w)) / dvdv;
+                            if (t > 0 && t <= collisionTime)
+                            {
+                                collision = true;
+                                collisionTime = t;
+                                index1 = i;
+                                index2 = j;
+                            }
                         }
                     }
-                }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -126,34 +127,19 @@ namespace SimulationPhysic
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void ElasticCollision(Object o1, Object o2)//v wird direkt verändert -> könte relativisitsch falsch sein
+        public void ElasticCollision(Object o1, Object o2)
         {
             var n_0 = (o1.x - o2.x).Normalize();
             var v_s_1 = n_0 * Vector3.Dot(n_0, o1.v);
             var v_s_2 = n_0 * Vector3.Dot(n_0, o2.v);
 
-            o1.v += (v_s_2 * (2 * o2.m) + v_s_1 * (o1.m - o2.m)) / (o1.m + o2.m) - v_s_1;
-            o2.v += (v_s_1 * (2 * o1.m) + v_s_2 * (o2.m - o1.m)) / (o1.m + o2.m) - v_s_2;
+            //o1.v += (v_s_2 * (2 * o2.m) + v_s_1 * (o1.m - o2.m)) / (o1.m + o2.m) - v_s_1;
+            //o2.v += (v_s_1 * (2 * o1.m) + v_s_2 * (o2.m - o1.m)) / (o1.m + o2.m) - v_s_2;
 
-            /* var cc = Physic.Constant.ligthSpeed * Physic.Constant.ligthSpeed;
-            var c = Physic.Constant.ligthSpeed;
-
-            var p_1 = v_s_1 * objects[obj1Index].m;
-            var p_2 = v_s_2 * objects[obj2Index].m;
-            var p = p_1 + p_2;
-
-            var E_1 = objects[obj1Index].m * cc;
-            var E_2 = objects[obj2Index].m * cc;
-            var E = E_1 + E_2;
-
-            var E_01 = objects[obj1Index].m_0 * cc;
-            var E_02 = objects[obj2Index].m_0 * cc;
-
-            var v = E * E + E_1 * E_1 - E_2 * E_2 - cc * Vector3.Dot(p, p);
-            var v1 = (p * c * v + Math.Sqrt(v * v * (Vector3.Dot(p, p) * cc - cc * Vector3.Dot(p, p) + E * E) + 4 * E * E * E_01 * E_01 * (cc * Vector3.Dot(p, p) - E * E)));
-
-            objects[obj1Index].p += v1 / (2 * c * (cc * Vector3.Dot(p, p) - E * E)) - v_s_1;
-            objects[obj2Index].p +=  - v_s_2;*/
+            //https://en.wikipedia.org/wiki/Elastic_collision
+            var Z = Math.Sqrt((1 - v_s_1.LengthSquared() / cc) * (1 - v_s_2.LengthSquared() / cc));
+            o1.v += (2 * o1.m * o2.m * cc * v_s_2 * Z + 2 * o2.m * o2.m * cc * v_s_2 - (o1.m * o1.m + o2.m * o2.m) * v_s_1 * v_s_2.LengthSquared() + (o1.m * o1.m - o2.m * o2.m) * cc * v_s_1) / (2 * o1.m * o2.m * cc * Z - 2 * o2.m * o2.m * Vector3.Dot(v_s_1, v_s_2) - (o1.m * o1.m - o2.m * o2.m) * v_s_2.LengthSquared() + (o1.m * o1.m + o2.m * o2.m) * cc) - v_s_1;
+            o2.v += (2 * o2.m * o1.m * cc * v_s_1 * Z + 2 * o1.m * o1.m * cc * v_s_1 - (o2.m * o2.m + o1.m * o1.m) * v_s_2 * v_s_1.LengthSquared() + (o2.m * o2.m - o1.m * o1.m) * cc * v_s_2) / (2 * o2.m * o1.m * cc * Z - 2 * o1.m * o1.m * Vector3.Dot(v_s_2, v_s_1) - (o2.m * o2.m - o1.m * o1.m) * v_s_1.LengthSquared() + (o2.m * o2.m + o1.m * o1.m) * cc) - v_s_2;
         }
     }
 

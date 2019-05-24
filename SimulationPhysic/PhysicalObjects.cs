@@ -44,8 +44,6 @@ namespace SimulationPhysic
         }
     }
 
-    //inlining für properties
-    //relativistisch korrekt machen, wahrscheinlich über impuls umgesetztz
     public class Object
     {
         public int matter;//1: matter, 0: none, -1: antimatter

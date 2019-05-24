@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
+using System.Linq;
 
 namespace SimulationPhysic
 {
@@ -10,7 +11,7 @@ namespace SimulationPhysic
     {
         //farben nach ladung
 
-        double minTimeStepS = 0.0000005;
+        double minTimeStepS = 0.0000001;
         double zoom = 50;
 
         Stopwatch sw = new Stopwatch();
@@ -64,17 +65,22 @@ namespace SimulationPhysic
 
         protected override void OnPaint(PaintEventArgs e)
         {
-            var obj = system.objects.ToArray();
-            foreach (var b in system.objects)
+            try
             {
-                double scaledXPos = (b.x.X - offsetMouseX) * zoom - (mouseDown ? startMouseX - MousePosition.X : 0);
-                double scaledYPos = (b.x.Y - offsetMouseY) * zoom - (mouseDown ? startMouseY - MousePosition.Y : 0);
-                if (scaledXPos > -Width / 2 && scaledXPos <= Width / 2 && scaledYPos > -Height / 2 && scaledYPos <= Height / 2)
-                    e.Graphics.DrawCircle(pen, (int)scaledXPos + Width / 2, (int)scaledYPos + Height / 2, (float)Math.Ceiling(b.r * zoom));
+                var obj = system.objects.ToArray();
+                label6.Text = obj.Sum(o => o.E).ToString();
+                foreach (var b in system.objects)
+                {
+                    double scaledXPos = (b.x.X - offsetMouseX) * zoom - (mouseDown ? startMouseX - MousePosition.X : 0);
+                    double scaledYPos = (b.x.Y - offsetMouseY) * zoom - (mouseDown ? startMouseY - MousePosition.Y : 0);
+                    if (scaledXPos > -Width / 2 && scaledXPos <= Width / 2 && scaledYPos > -Height / 2 && scaledYPos <= Height / 2)
+                        e.Graphics.DrawCircle(pen, (int)scaledXPos + Width / 2, (int)scaledYPos + Height / 2, (float)Math.Ceiling(b.r * zoom));
+                }
+                label1.Text = system.time.ToString();
+                label5.Text = (system.time * 1000 / sw.ElapsedMilliseconds).ToString();
+                label4.Text = (offsetMouseX + (mouseDown ? startMouseX - MousePosition.X : 0) / zoom) + "; " + (offsetMouseY + (mouseDown ? startMouseY - MousePosition.Y : 0) / zoom);
             }
-            label1.Text = system.time.ToString();
-            label5.Text = (system.time * 1000 / sw.ElapsedMilliseconds).ToString();
-            label4.Text = (offsetMouseX + (mouseDown ? startMouseX - MousePosition.X : 0) / zoom) + "; " + (offsetMouseY + (mouseDown ? startMouseY - MousePosition.Y : 0) / zoom);
+            catch {}
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
