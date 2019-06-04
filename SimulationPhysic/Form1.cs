@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Drawing;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Windows.Forms;
-using System.Linq;
 
 namespace SimulationPhysic
 {
@@ -11,7 +12,7 @@ namespace SimulationPhysic
     {
         //farben nach ladung
 
-        double minTimeStepS = 0.0000001;
+        double minTimeStepS = 0.000001;
         double zoom = 50;
 
         Stopwatch sw = new Stopwatch();
@@ -67,21 +68,55 @@ namespace SimulationPhysic
         {
             try
             {
+                DrawFieldStrength(e);
                 var obj = system.objects.ToArray();
                 label6.Text = obj.Sum(o => o.E).ToString();
                 foreach (var b in system.objects)
                 {
-                    double scaledXPos = (b.x.X - offsetMouseX) * zoom - (mouseDown ? startMouseX - MousePosition.X : 0);
-                    double scaledYPos = (b.x.Y - offsetMouseY) * zoom - (mouseDown ? startMouseY - MousePosition.Y : 0);
-                    if (scaledXPos > -Width / 2 && scaledXPos <= Width / 2 && scaledYPos > -Height / 2 && scaledYPos <= Height / 2)
-                        e.Graphics.DrawCircle(pen, (int)scaledXPos + Width / 2, (int)scaledYPos + Height / 2, (float)Math.Ceiling(b.r * zoom));
+                    double screenX = SystemXToScreenX(b.x.X);
+                    double screenY = SystemYToScreenY(b.x.Y);
+                    if (screenX >= 0 && screenX < Width && screenY >= 0 && screenY < Height)
+                        e.Graphics.DrawCircle(pen, (int)screenX, (int)screenY, (float)Math.Ceiling(b.r * zoom));
                 }
                 label1.Text = system.time.ToString();
                 label5.Text = (system.time * 1000 / sw.ElapsedMilliseconds).ToString();
                 label4.Text = (offsetMouseX + (mouseDown ? startMouseX - MousePosition.X : 0) / zoom) + "; " + (offsetMouseY + (mouseDown ? startMouseY - MousePosition.Y : 0) / zoom);
             }
-            catch {}
+            catch { }
         }
+
+        const int fieldStrengthRegionCount = 18;
+        double[,] fieldStrengthRegions = new double[fieldStrengthRegionCount, fieldStrengthRegionCount];
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        void DrawFieldStrength(PaintEventArgs e)
+        {
+            double maxStrength = 0;
+            int d1 = Width / fieldStrengthRegionCount, d2 = Height / fieldStrengthRegionCount;
+            for (int i = 0; i < fieldStrengthRegionCount; i++)
+                for (int j = 0; j < fieldStrengthRegionCount; j++)
+                {
+                    fieldStrengthRegions[i, j] = system.FieldStrength(new Vector3(ScreenXToSystemX(i * d1), ScreenYToSystemY(j * d2), 0)).LengthSquared();
+                    if (fieldStrengthRegions[i, j] > maxStrength)
+                        maxStrength = fieldStrengthRegions[i, j];
+                }
+            for (int i = 0; i < fieldStrengthRegionCount; i++)
+                for(int j = 0; j < fieldStrengthRegionCount; j++)
+                    e.Graphics.FillRectangle(new SolidBrush(Color.FromArgb((int)(255 * Math.Pow(fieldStrengthRegions[i, j] / maxStrength, 0.05)), 100, 100)), (int)((i - 0.5) * d1), (int)((j - 0.5) * d2), d1, d2);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        double ScreenXToSystemX(double screen) => (screen + (mouseDown ? startMouseX - MousePosition.X : 0) - Width / 2) / zoom + offsetMouseX;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        double ScreenYToSystemY(double screen) => (screen + (mouseDown ? startMouseY - MousePosition.Y : 0) - Height / 2) / zoom + offsetMouseY;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        double SystemXToScreenX(double systemX) => (systemX - offsetMouseX) * zoom - (mouseDown ? startMouseX - MousePosition.X : 0) + Width / 2;
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        double SystemYToScreenY(double systemX) => (systemX - offsetMouseY) * zoom - (mouseDown ? startMouseY - MousePosition.Y : 0) + Height / 2;
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {

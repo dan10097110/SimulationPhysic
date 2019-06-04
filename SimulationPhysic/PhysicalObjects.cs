@@ -42,13 +42,20 @@ namespace SimulationPhysic
             if (direction.IsZero())
                 this.v = Vector3.Random().Normalize() * c;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override void Move(double t) => x += v.Normalize() * (c * t);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public override void Accelerate(double t) { }
     }
 
     public class Object
     {
         public int matter;//1: matter, 0: none, -1: antimatter
         public bool stable = true;
-        public Vector3 x, v;
+        public Vector3 x;
+        public Vector3 v;
         public readonly double m_0, r, q, E_Extra, t_half;
 
         public virtual Vector3 Force { get; set; }
@@ -87,10 +94,10 @@ namespace SimulationPhysic
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Move(double t) => x += v * t;
+        public virtual void Move(double t) => x += v * t;
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Accelerate(double t)
+        public virtual void Accelerate(double t)
         {
             p += Force * t;
             Force = new Vector3();
@@ -100,5 +107,12 @@ namespace SimulationPhysic
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static bool Annihilating(Object o1, Object o2) => o1.m_0 == o2.m_0 && o1.q == -o2.q && o1.r == o2.r && o1.matter == -o2.matter && o1.matter != 0;
+
+        public Vector3 FieldStrength(Vector3 x)
+        {
+            var r = this.x - x;
+            double sumR = r.Length();
+            return r * ((gravitationConstant * m + q / (4 * Math.PI * electricConstant)) / (sumR * sumR * sumR));
+        }
     }
 }

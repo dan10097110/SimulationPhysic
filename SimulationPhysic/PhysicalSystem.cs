@@ -118,7 +118,7 @@ namespace SimulationPhysic
         {
             double temp = 1 / Math.Sqrt(1 / objects[i1].v.LengthSquared() - 1 / cc) + 1 / Math.Sqrt(1 / objects[i2].v.LengthSquared() - 1 / cc);
             double vv = 1 / (4 / (temp * temp) + 1 / cc);
-            var direction = objects[i1].v + objects[i2].v;
+            var direction = objects[i1].p + objects[i2].p;
             double lengthSqaured = direction.LengthSquared();
             direction = lengthSqaured == 0 ? new Vector3() : direction / Math.Sqrt(lengthSqaured);
             objects.Add(new Object(2 * objects[i1].m, 0, 1.06E-10, (objects[i1].x + objects[i2].x) / 2, Math.Sqrt(vv) * direction, 0, 2 * objects[i1].m * cc / Math.Sqrt(1 - vv / cc) - (objects[i1].E + objects[i2].E), false, 1.25E-10, new Vector3()));
@@ -138,8 +138,19 @@ namespace SimulationPhysic
 
             //https://en.wikipedia.org/wiki/Elastic_collision
             var Z = Math.Sqrt((1 - v_s_1.LengthSquared() / cc) * (1 - v_s_2.LengthSquared() / cc));
-            o1.v += (2 * o1.m * o2.m * cc * v_s_2 * Z + 2 * o2.m * o2.m * cc * v_s_2 - (o1.m * o1.m + o2.m * o2.m) * v_s_1 * v_s_2.LengthSquared() + (o1.m * o1.m - o2.m * o2.m) * cc * v_s_1) / (2 * o1.m * o2.m * cc * Z - 2 * o2.m * o2.m * Vector3.Dot(v_s_1, v_s_2) - (o1.m * o1.m - o2.m * o2.m) * v_s_2.LengthSquared() + (o1.m * o1.m + o2.m * o2.m) * cc) - v_s_1;
-            o2.v += (2 * o2.m * o1.m * cc * v_s_1 * Z + 2 * o1.m * o1.m * cc * v_s_1 - (o2.m * o2.m + o1.m * o1.m) * v_s_2 * v_s_1.LengthSquared() + (o2.m * o2.m - o1.m * o1.m) * cc * v_s_2) / (2 * o2.m * o1.m * cc * Z - 2 * o1.m * o1.m * Vector3.Dot(v_s_2, v_s_1) - (o2.m * o2.m - o1.m * o1.m) * v_s_1.LengthSquared() + (o2.m * o2.m + o1.m * o1.m) * cc) - v_s_2;
+            //o1.v += (2 * o1.m * o2.m * cc * v_s_2 * Z + 2 * o2.m * o2.m * cc * v_s_2 - (o1.m * o1.m + o2.m * o2.m) * v_s_1 * v_s_2.LengthSquared() + (o1.m * o1.m - o2.m * o2.m) * cc * v_s_1) / (2 * o1.m * o2.m * cc * Z - 2 * o2.m * o2.m * Vector3.Dot(v_s_1, v_s_2) - (o1.m * o1.m - o2.m * o2.m) * v_s_2.LengthSquared() + (o1.m * o1.m + o2.m * o2.m) * cc) - v_s_1;
+            //o2.v += (2 * o2.m * o1.m * cc * v_s_1 * Z + 2 * o1.m * o1.m * cc * v_s_1 - (o2.m * o2.m + o1.m * o1.m) * v_s_2 * v_s_1.LengthSquared() + (o2.m * o2.m - o1.m * o1.m) * cc * v_s_2) / (2 * o2.m * o1.m * cc * Z - 2 * o1.m * o1.m * Vector3.Dot(v_s_2, v_s_1) - (o2.m * o2.m - o1.m * o1.m) * v_s_1.LengthSquared() + (o2.m * o2.m + o1.m * o1.m) * cc) - v_s_2;
+
+            o1.v += (2 * o1.m_0 * o2.m_0 * cc * v_s_2 * Z + 2 * o2.m_0 * o2.m_0 * cc * v_s_2 - (o1.m_0 * o1.m_0 + o2.m_0 * o2.m_0) * v_s_1 * v_s_2.LengthSquared() + (o1.m_0 * o1.m_0 - o2.m_0 * o2.m_0) * cc * v_s_1) / (2 * o1.m_0 * o2.m_0 * cc * Z - 2 * o2.m_0 * o2.m_0 * Vector3.Dot(v_s_1, v_s_2) - (o1.m_0 * o1.m_0 - o2.m_0 * o2.m_0) * v_s_2.LengthSquared() + (o1.m_0 * o1.m_0 + o2.m_0 * o2.m_0) * cc) - v_s_1;
+            o2.v += (2 * o2.m_0 * o1.m_0 * cc * v_s_1 * Z + 2 * o1.m_0 * o1.m_0 * cc * v_s_1 - (o2.m_0 * o2.m_0 + o1.m_0 * o1.m_0) * v_s_2 * v_s_1.LengthSquared() + (o2.m_0 * o2.m_0 - o1.m_0 * o1.m_0) * cc * v_s_2) / (2 * o2.m_0 * o1.m_0 * cc * Z - 2 * o1.m_0 * o1.m_0 * Vector3.Dot(v_s_2, v_s_1) - (o2.m_0 * o2.m_0 - o1.m_0 * o1.m_0) * v_s_1.LengthSquared() + (o2.m_0 * o2.m_0 + o1.m_0 * o1.m_0) * cc) - v_s_2;
+        }
+
+        public Vector3 FieldStrength(Vector3 pos)
+        {
+            Vector3 str = Vector3.Zero;
+            foreach (Object obj in objects)
+                str += obj.FieldStrength(pos);
+            return str;
         }
     }
 
